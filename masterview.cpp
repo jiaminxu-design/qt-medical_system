@@ -39,6 +39,10 @@ void MasterView::goWelcomeView()
     connect(welcomeView, SIGNAL(goDoctorView()), this, SLOT(goDoctorView()));
     connect(welcomeView, SIGNAL(goPatientView()), this, SLOT(goPatientView()));
     connect(welcomeView, SIGNAL(goDepartmentView()), this, SLOT(goDepartmentView()));
+    connect(welcomeView, SIGNAL(goRecordView()), this, SLOT(goRecordView()));
+    connect(welcomeView, SIGNAL(goMedicineView()), this, SLOT(goMedicineView()));
+    connect(welcomeView, SIGNAL(goAppointmentView()), this, SLOT(goAppointmentView()));
+
 }
 
 void MasterView::goDoctorView()
@@ -84,6 +88,27 @@ void MasterView::goPreviousView()
         ui->stackedWidget->removeWidget(widget);
         delete widget;
     }
+}
+
+void MasterView::goRecordView()
+{
+    qDebug() << "goRecordView";
+    recordView = new RecordView(this);
+    pushWidgetToStackView(recordView);
+}
+
+void MasterView::goMedicineView()
+{
+    qDebug() << "goMedicineView";
+    medicineView = new MedicineView(this);
+    pushWidgetToStackView(medicineView);
+}
+
+void MasterView::goAppointmentView()
+{
+    qDebug() << "goAppointmentView";
+    appointmentView = new AppointmentView(this);
+    pushWidgetToStackView(appointmentView);
 }
 
 void MasterView::pushWidgetToStackView(QWidget *widget)

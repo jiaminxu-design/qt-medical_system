@@ -71,6 +71,8 @@ void IDatabase::revertPatientEdit()
     return patientTabModel->revertAll();
 }
 
+
+
 QString IDatabase::userLogin(QString userName, QString password)
 {
     // return "loginOK";
@@ -98,3 +100,4 @@ IDatabase::IDatabase(QObject *parent) : QObject(parent)
 {
     initDatabase();
 }
+

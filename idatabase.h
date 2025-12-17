@@ -19,7 +19,6 @@ public:
 
     QString userLogin(QString userName, QString password);
 
-
 private:
 
     explicit IDatabase(QObject *parent = nullptr);
@@ -29,6 +28,7 @@ private:
     QSqlDatabase database;
 
     void initDatabase();
+
 
 signals:
 

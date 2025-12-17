@@ -1,6 +1,7 @@
 #include "patientview.h"
 #include "ui_patientview.h"
 #include"idatabase.h"
+#include<QMessageBox>
 
 PatientView::PatientView(QWidget *parent, int index) :
     QWidget(parent),
@@ -39,15 +40,15 @@ void PatientView::on_btSearch_clicked()
 }
 
 
-void PatientView::on_btDelete_clicked()
-{
-    IDatabase::getInstance().deleteCurrentPatient();
-}
-
 
 void PatientView::on_btEdit_clicked()
 {
     QModelIndex curIndex = IDatabase::getInstance().thePatientSelection->currentIndex();
     emit goPatientEditView(curIndex.row());
+}
+
+void PatientView::on_btDelete_clicked()
+{
+    IDatabase::getInstance().deleteCurrentPatient();
 }
 
