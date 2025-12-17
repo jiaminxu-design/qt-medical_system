@@ -80,13 +80,6 @@
       </property>
      </spacer>
     </item>
-    <item>
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>2023414300220 许嘉敏</string>
-      </property>
-     </widget>
-    </item>
    </layout>
   </widget>
  </widget>
