@@ -57,42 +57,6 @@
           </item>
          </widget>
         </item>
-        <item>
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>预约状态：</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QComboBox" name="comboStatus">
-          <item>
-           <property name="text">
-            <string>全部状态</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>待确认</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>已确认</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>已完成</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>已取消</string>
-           </property>
-          </item>
-         </widget>
-        </item>
        </layout>
       </widget>
      </item>
@@ -171,13 +135,6 @@
         <widget class="QPushButton" name="btConfirm">
          <property name="text">
           <string>确认预约</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="btComplete">
-         <property name="text">
-          <string>标记完成</string>
          </property>
         </widget>
        </item>

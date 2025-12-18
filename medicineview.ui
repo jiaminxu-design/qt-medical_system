@@ -91,32 +91,6 @@
         </item>
        </widget>
       </item>
-      <item row="1" column="2">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>有效期：</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="3">
-       <widget class="QComboBox" name="comboExpiry">
-        <item>
-         <property name="text">
-          <string>全部</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>近效期(3个月内)</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>已过期</string>
-         </property>
-        </item>
-       </widget>
-      </item>
       <item row="2" column="0" colspan="4">
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>

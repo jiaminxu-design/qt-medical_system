@@ -49,7 +49,25 @@ void MasterView::goDoctorView()
     qDebug() << "goDoctorView";
     doctorView = new DoctorView(this);
     pushWidgetToStackView(doctorView);
+
+    // 关联“跳转到编辑界面”信号
+    connect(doctorView, SIGNAL(goDoctorEditView(int)), this, SLOT(goDoctorEditView(int)));
 }
+
+
+
+void MasterView::goDoctorEditView(int rowNo)
+{
+    qDebug() << "goDoctorEditView";
+    doctorEditView = new DoctorEditView(this, rowNo);
+    pushWidgetToStackView(doctorEditView);
+
+    // 关联“返回上一级”信号
+    connect(doctorEditView, SIGNAL(goPreviousView()), this, SLOT(goPreviousView()));
+}
+
+
+
 
 void MasterView::goPatientEditView(int rowNo)
 {
