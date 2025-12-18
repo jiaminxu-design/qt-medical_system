@@ -38,7 +38,6 @@ void MasterView::goWelcomeView()
 
     connect(welcomeView, SIGNAL(goDoctorView()), this, SLOT(goDoctorView()));
     connect(welcomeView, SIGNAL(goPatientView()), this, SLOT(goPatientView()));
-    connect(welcomeView, SIGNAL(goDepartmentView()), this, SLOT(goDepartmentView()));
     connect(welcomeView, SIGNAL(goRecordView()), this, SLOT(goRecordView()));
     connect(welcomeView, SIGNAL(goMedicineView()), this, SLOT(goMedicineView()));
     connect(welcomeView, SIGNAL(goAppointmentView()), this, SLOT(goAppointmentView()));
@@ -50,13 +49,6 @@ void MasterView::goDoctorView()
     qDebug() << "goDoctorView";
     doctorView = new DoctorView(this);
     pushWidgetToStackView(doctorView);
-}
-
-void MasterView::goDepartmentView()
-{
-    qDebug() << "goDepartment";
-    departmentView = new DepartmentView(this);
-    pushWidgetToStackView(departmentView);
 }
 
 void MasterView::goPatientEditView(int rowNo)

@@ -16,7 +16,6 @@ public:
     ~WelcomeView();
 
 private slots:
-    void on_btDepartment_clicked();
 
     void on_btDoctor_clicked();
 
@@ -29,7 +28,6 @@ private slots:
     void on_btAppointment_clicked();
 
 signals:
-    void goDepartmentView();
     void goDoctorView();
     void goPatientView();
     void goRecordView();

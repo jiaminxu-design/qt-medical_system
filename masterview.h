@@ -4,7 +4,6 @@
 #include <QWidget>
 #include <loginview.h>
 #include<doctorview.h>
-#include<departmentview.h>
 #include<patienteditview.h>
 #include<patientview.h>
 #include<welcomeview.h>
@@ -30,7 +29,6 @@ public slots:
     void goLoginView();
     void goWelcomeView();
     void goDoctorView();
-    void goDepartmentView();
     void goPatientEditView(int rowNo);
     void goPatientView();
     void goPreviousView();
@@ -52,7 +50,6 @@ private:
     WelcomeView *welcomeView;
     DoctorView *doctorView;
     PatientView *patientView;
-    DepartmentView *departmentView;
     LoginView *loginView;
     PatientEditView *patientEditView;
     RecordView *recordView;
