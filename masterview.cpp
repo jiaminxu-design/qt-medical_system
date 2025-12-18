@@ -37,13 +37,26 @@ void MasterView::goWelcomeView()
     welcomeView = new WelcomeView(this);
     pushWidgetToStackView(welcomeView);
 
-    connect(welcomeView, SIGNAL(goDoctorView()), this, SLOT(goDoctorView()));
-    connect(welcomeView, SIGNAL(goPatientView()), this, SLOT(goPatientView()));
-    connect(welcomeView, SIGNAL(goRecordView()), this, SLOT(goRecordView()));
-    connect(welcomeView, SIGNAL(goMedicineView()), this, SLOT(goMedicineView()));
-    connect(welcomeView, SIGNAL(goAppointmentView()), this, SLOT(goAppointmentView()));
+//    connect(welcomeView, SIGNAL(goDoctorView()), this, SLOT(goDoctorView()));
+//    connect(welcomeView, SIGNAL(goPatientView()), this, SLOT(goPatientView()));
+//    connect(welcomeView, SIGNAL(goRecordView()), this, SLOT(goRecordView()));
+//    connect(welcomeView, SIGNAL(goMedicineView()), this, SLOT(goMedicineView()));
+//    connect(welcomeView, SIGNAL(goAppointmentView()), this, SLOT(goAppointmentView()));
+    // 使用Qt::UniqueConnection确保信号只连接一次
+    connect(welcomeView, SIGNAL(goDoctorView()),
+            this, SLOT(goDoctorView()), Qt::UniqueConnection);
+    connect(welcomeView, SIGNAL(goPatientView()),
+            this, SLOT(goPatientView()), Qt::UniqueConnection);
+    connect(welcomeView, SIGNAL(goRecordView()),
+            this, SLOT(goRecordView()), Qt::UniqueConnection);
+    connect(welcomeView, SIGNAL(goMedicineView()),
+            this, SLOT(goMedicineView()), Qt::UniqueConnection);
+    connect(welcomeView, SIGNAL(goAppointmentView()),
+            this, SLOT(goAppointmentView()), Qt::UniqueConnection);
 
 }
+
+
 
 void MasterView::goDoctorView()
 {
@@ -80,39 +93,125 @@ void MasterView::goPatientEditView(int rowNo)
 
 }
 
+//void MasterView::goPatientView()
+//{
+//    // 如果patientView已存在，先检查是否需要销毁
+//    if (patientView != nullptr) {
+//        // 先从stackedWidget中移除
+//        int index = ui->stackedWidget->indexOf(patientView);
+//        if (index >= 0) {
+//            ui->stackedWidget->removeWidget(patientView);
+//        }
+//        // 安全删除
+//        delete patientView;
+//        patientView = nullptr;
+//    }
+
+//    // 创建新的PatientView
+//    patientView = new PatientView(this);
+
+//    // 重新连接信号
+//    connect(patientView, SIGNAL(goPatientEditView(int)),
+//            this, SLOT(goPatientEditView(int)));
+
+//    // 添加到stackedWidget
+//    pushWidgetToStackView(patientView);
+//}
+
+//void MasterView::goPatientView()
+//{
+//    qDebug() << "goPatientView";
+
+//    // 如果页面已存在，直接显示；否则新建
+//    if (patientView == nullptr) {
+//        patientView = new PatientView(this);
+//        connect(patientView, SIGNAL(goPatientEditView(int)),
+//                this, SLOT(goPatientEditView(int)));
+//    } else {
+//        // 刷新现有视图的数据
+//        if (IDatabase::getInstance().patientTabModel) {
+//            IDatabase::getInstance().patientTabModel->select();
+//        }
+//    }
+
+//    pushWidgetToStackView(patientView);
+//}
+
 void MasterView::goPatientView()
 {
-    // 如果patientView已存在，先检查是否需要销毁
+    qDebug() << "goPatientView";
+
+    // 如果patientView已存在，先清理
     if (patientView != nullptr) {
-        // 先从stackedWidget中移除
+        // 从stackedWidget中移除
         int index = ui->stackedWidget->indexOf(patientView);
         if (index >= 0) {
             ui->stackedWidget->removeWidget(patientView);
         }
-        // 安全删除
+        // 断开所有连接
+        patientView->disconnect();
         delete patientView;
         patientView = nullptr;
     }
 
-    // 创建新的PatientView
+    // 总是创建新的PatientView
     patientView = new PatientView(this);
 
-    // 重新连接信号
+    // 连接信号
     connect(patientView, SIGNAL(goPatientEditView(int)),
             this, SLOT(goPatientEditView(int)));
 
-    // 添加到stackedWidget
     pushWidgetToStackView(patientView);
 }
+
+//void MasterView::goPreviousView()
+//{
+//    int count = ui->stackedWidget->count();
+//    if (count > 1) {
+//        ui->stackedWidget->setCurrentIndex((count - 2));
+//        ui->labelTitle->setText(ui->stackedWidget->currentWidget()->windowTitle());
+
+//        QWidget *widget = ui->stackedWidget->widget(count - 1);
+//        ui->stackedWidget->removeWidget(widget);
+//        delete widget;
+//    }
+//}
 
 void MasterView::goPreviousView()
 {
     int count = ui->stackedWidget->count();
     if (count > 1) {
-        ui->stackedWidget->setCurrentIndex((count - 2));
+        // 获取要删除的widget
+        QWidget *widget = ui->stackedWidget->widget(count - 1);
+
+        // 检查widget类型并清理对应的指针
+        if (widget == loginView) {
+            loginView = nullptr;
+        } else if (widget == welcomeView) {
+            welcomeView = nullptr;
+        } else if (widget == patientView) {
+            patientView = nullptr;
+        } else if (widget == doctorView) {
+            doctorView = nullptr;
+        } else if (widget == recordView) {
+            recordView = nullptr;
+        } else if (widget == medicineView) {
+            medicineView = nullptr;
+        } else if (widget == appointmentView) {
+            appointmentView = nullptr;
+        } else if (widget == patientEditView) {
+            patientEditView = nullptr;
+        } else if (widget == doctorEditView) {
+            doctorEditView = nullptr;
+        } else if (widget == medicineEditView) {
+            medicineEditView = nullptr;
+        }
+
+        // 切换视图
+        ui->stackedWidget->setCurrentIndex(count - 2);
         ui->labelTitle->setText(ui->stackedWidget->currentWidget()->windowTitle());
 
-        QWidget *widget = ui->stackedWidget->widget(count - 1);
+        // 移除并删除widget
         ui->stackedWidget->removeWidget(widget);
         delete widget;
     }

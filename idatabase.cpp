@@ -16,19 +16,21 @@ void IDatabase::initDatabase()
 
 bool IDatabase::initPatientModel()
 {
-    // 如果模型已经存在且有效，直接返回true
+    // 如果模型已经存在且有效，直接刷新数据并返回
     if (patientTabModel != nullptr) {
-        // 检查模型是否仍然有效
         if (patientTabModel->database().isOpen()) {
-            // 刷新数据
+            // 刷新数据但不删除模型
             patientTabModel->select();
             return true;
-        } else {
-            // 数据库已关闭，需要重新创建
+        }
+        // 如果数据库关闭了，需要清理
+        if (thePatientSelection) {
             delete thePatientSelection;
+            thePatientSelection = nullptr;
+        }
+        if (patientTabModel) {
             delete patientTabModel;
             patientTabModel = nullptr;
-            thePatientSelection = nullptr;
         }
     }
 
@@ -45,14 +47,18 @@ bool IDatabase::initPatientModel()
     if (nameField >= 0)
         patientTabModel->setSort(nameField, Qt::AscendingOrder);
 
-    // 校验表是否存在
     if (!patientTabModel->select()) {
         delete patientTabModel;
         patientTabModel = nullptr;
         return false;
     }
 
+    // 每次都创建新的选择模型
+    if (thePatientSelection) {
+        delete thePatientSelection;
+    }
     thePatientSelection = new QItemSelectionModel(patientTabModel);
+
     return true;
 }
 

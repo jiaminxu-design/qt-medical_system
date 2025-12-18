@@ -57,6 +57,7 @@ PatientEditView::PatientEditView(QWidget *parent, int index) :
     ui->dbEditID->setEnabled(false);
 }
 
+
 PatientEditView::~PatientEditView()
 {
     delete dataMapper;

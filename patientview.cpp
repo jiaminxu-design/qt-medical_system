@@ -16,15 +16,25 @@ PatientView::PatientView(QWidget *parent, int index) :
 
     IDatabase &db = IDatabase::getInstance();
 
-    // 永远尝试初始化模型，initPatientModel()会处理重复初始化
-    if (!db.initPatientModel()) {
-        // 可以显示错误信息，但不退出
-        qDebug() << "PatientView: 模型初始化失败";
-        return;
+    // 如果模型不存在，才初始化
+    if (db.patientTabModel == nullptr) {
+        if (!db.initPatientModel()) {
+            qDebug() << "PatientView: 模型初始化失败";
+            return;
+        }
+    } else {
+        // 模型已存在，刷新数据
+        db.patientTabModel->select();
     }
 
     // 设置模型到表格视图
     ui->tableView->setModel(db.patientTabModel);
+
+    // 重要：每次都创建新的选择模型给这个视图
+    if (db.thePatientSelection) {
+        delete db.thePatientSelection;
+    }
+    db.thePatientSelection = new QItemSelectionModel(db.patientTabModel);
     ui->tableView->setSelectionModel(db.thePatientSelection);
 }
 
