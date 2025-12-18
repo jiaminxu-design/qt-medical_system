@@ -40,7 +40,7 @@ MedicineView::~MedicineView()
     delete ui;
 }
 
-// ======== 按钮槽函数（保持不变）========
+// ======== 按钮槽函数========
 void MedicineView::on_btSearch_clicked()
 {
     QString name = ui->txtName->text().trimmed();
@@ -62,9 +62,10 @@ void MedicineView::on_btSearch_clicked()
     db.searchMedicine(finalFilter);
 }
 
+
 void MedicineView::on_btAdd_clicked()
 {
-    // 1. 先刷新模型（确保行计数准确）
+    // 1. 刷新模型
     db.medicineTabModel->select();
 
     // 2. 创建新行
@@ -74,13 +75,14 @@ void MedicineView::on_btAdd_clicked()
         return;
     }
 
-    // 3. 提交新行（关键！否则新行未持久化）
-    db.medicineTabModel->submitAll();
-    db.medicineTabModel->select(); // 刷新模型
+    // 3. 选中新行
+    QModelIndex newIndex = db.medicineTabModel->index(newRow, 0);
+    db.theMedicineSelection->select(newIndex, QItemSelectionModel::Select | QItemSelectionModel::Rows);
 
-    // 4. 触发跳转（确保新行索引有效）
-    emit goMedicineEditView(newRow);
+    // 4. 发送信号跳转
+    emit goMedicineEditView(newIndex.row());
 }
+
 
 void MedicineView::on_btEdit_clicked()
 {

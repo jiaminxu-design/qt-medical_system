@@ -3,36 +3,51 @@
 #include <QMessageBox>
 #include <QDebug>
 
-MedicineEditView::MedicineEditView(QWidget *parent, int editRow) :
+MedicineEditView::MedicineEditView(QWidget *parent, int /*editRow*/) : // 忽略传入的editRow
     QWidget(parent),
     ui(new Ui::MedicineEditView),
-    currentRow(editRow),
-    dataMapper(new QDataWidgetMapper(this)),
-    // MedicineEditView.cpp 构造函数中，替换 isNewMedicine 的初始化逻辑
-    isNewMedicine(editRow >= 0
-                  && db.medicineTabModel->rowCount() > 0
-                  && editRow == db.medicineTabModel->rowCount() - 1)
-    // 新增行是最后一行
+    dataMapper(new QDataWidgetMapper(this))
 {
     ui->setupUi(this);
+
+    // 1. 从选择模型获取当前选中的行
+    QModelIndex currentIndex = db.theMedicineSelection->currentIndex();
+
+    // 如果没有选中行，则默认选择最后一行（用于新增）
+    if (!currentIndex.isValid()) {
+        currentIndex = db.medicineTabModel->index(db.medicineTabModel->rowCount() - 1, 0);
+        db.theMedicineSelection->select(currentIndex,
+                                        QItemSelectionModel::Select | QItemSelectionModel::Rows);
+    }
+
+    currentRow = currentIndex.row();
+
+    // 2. 判断是否为新增模式
+    // 新增模式：当前行是最后一行 并且 没有被提交过（即新行）
+    isNewMedicine = (currentRow == db.medicineTabModel->rowCount() - 1) &&
+                    (db.medicineTabModel->data(db.medicineTabModel->index(currentRow,
+                                                                          db.medicineTabModel->fieldIndex("NAME"))).toString().isEmpty());
+
+    // 3. 初始化映射器
     initMapper();
     loadMedicineData();
 
-    // 修复connect重载问题
+    // 4. 绑定信号
     connect(ui->medSpinStock,
             static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
             this,
             &MedicineEditView::on_medSpinStock_valueChanged);
 
-    // 新增模式：UI优化（清空默认ID/高亮名称输入框）
+    // 5. UI优化
     if (isNewMedicine) {
-        this->setWindowTitle("新增药品信息"); // 标题区分
-        ui->medEditName->setFocus(); // 光标聚焦名称输入框
-        ui->medEditID->setPlaceholderText("保存后自动生成"); // 提示ID自动生成
+        this->setWindowTitle("新增药品信息");
+        ui->medEditName->setFocus();
+        ui->medEditID->setPlaceholderText("保存后自动生成");
     } else {
         this->setWindowTitle("编辑药品信息");
     }
 }
+
 
 MedicineEditView::~MedicineEditView()
 {
@@ -89,20 +104,22 @@ void MedicineEditView::initMapper()
 void MedicineEditView::loadMedicineData()
 {
     if (isNewMedicine) {
-        // 新增模式：仅初始化默认值，不加载数据
+        // 新增模式：仅初始化默认值
         ui->medSpinStock->setValue(0);
         ui->medComboStatus->setCurrentText("缺货");
         ui->medDateExpiry->setDate(QDate::currentDate().addYears(1));
         ui->medSpinPrice->setValue(0.00);
         ui->medEditUnit->setText("盒"); // 默认单位
+        ui->medEditID->clear(); // 清空ID（由系统生成）
         return;
     }
 
-    // 编辑模式：加载原有数据（原有逻辑不变）
+    // 编辑模式：加载原有数据
     if (currentRow >= 0 && currentRow < db.medicineTabModel->rowCount()) {
+        // 使用 dataMapper.revert() 恢复原始数据
         dataMapper->revert();
 
-        // 有效期处理
+        // 手动处理有效期（因为 dateEdit 不支持自动映射）
         QString expiryStr = db.medicineTabModel->data(
                                 db.medicineTabModel->index(currentRow, db.medicineTabModel->fieldIndex("EXPIRY_DATE"))
                             ).toString();
@@ -113,11 +130,11 @@ void MedicineEditView::loadMedicineData()
             }
         }
 
+        // 库存状态根据库存自动更新
         int stock = ui->medSpinStock->value();
         ui->medComboStatus->setCurrentText(stock > 0 ? "正常库存" : "缺货");
     }
 }
-
 
 // 库存变化时自动更新状态
 void MedicineEditView::on_medSpinStock_valueChanged(int arg1)
@@ -134,41 +151,30 @@ void MedicineEditView::on_btnSave_clicked()
         return;
     }
 
-    // 2. 新增模式校验（放宽单价限制，允许0）
     if (isNewMedicine) {
-        if (ui->medEditUnit->text().trimmed().isEmpty()) {
-            QMessageBox::warning(this, "提示", "新增药品单位不能为空！");
-            return;
+        // 生成 ID 并设置
+        QString newId = QUuid::createUuid().toString(QUuid::WithoutBraces);
+        int idCol = db.medicineTabModel->fieldIndex("ID");
+        if (idCol != -1) {
+            db.medicineTabModel->setData(db.medicineTabModel->index(currentRow, idCol), newId);
         }
-        // 单价允许0（避免用户输入0时无法保存）
-        // if (ui->medSpinPrice->value() <= 0) { ... }
     }
 
-    // 3. 校验模型和行索引
-    if (!db.medicineTabModel || currentRow < 0 || currentRow >= db.medicineTabModel->rowCount()) {
-        QMessageBox::warning(this, "错误", "无效的药品记录！");
-        return;
-    }
-
-    // 4. 提交映射器数据
+    // 2. 提交数据（已通过选择模型确保currentRow有效）
     if (!dataMapper->submit()) {
-        // 通过模型获取错误
         QSqlError error = db.medicineTabModel->lastError();
         QMessageBox::warning(this, "错误", "提交数据失败：" + error.text());
         return;
     }
 
-    // 5. 手动处理有效期（确保格式正确）
+    // 3. 处理有效期
     int expiryCol = db.medicineTabModel->fieldIndex("EXPIRY_DATE");
     if (expiryCol != -1) {
         QString expiryStr = ui->medDateExpiry->date().toString("yyyy-MM-dd");
-        db.medicineTabModel->setData(
-            db.medicineTabModel->index(currentRow, expiryCol),
-            expiryStr
-        );
+        db.medicineTabModel->setData(db.medicineTabModel->index(currentRow, expiryCol), expiryStr);
     }
 
-    // 6. 提交到数据库
+    // 4. 提交到数据库
     bool ret = db.submitMedicineEdit();
     if (ret) {
         QString tip = isNewMedicine ? "新增药品成功！" : "编辑药品成功！";
