@@ -13,15 +13,44 @@ void IDatabase::initDatabase()
         qDebug() << "open database is ok";
 }
 
+
 bool IDatabase::initPatientModel()
 {
+    // 如果模型已经存在且有效，直接返回true
+    if (patientTabModel != nullptr) {
+        // 检查模型是否仍然有效
+        if (patientTabModel->database().isOpen()) {
+            // 刷新数据
+            patientTabModel->select();
+            return true;
+        } else {
+            // 数据库已关闭，需要重新创建
+            delete thePatientSelection;
+            delete patientTabModel;
+            patientTabModel = nullptr;
+            thePatientSelection = nullptr;
+        }
+    }
+
+    // 校验数据库是否打开
+    if (!database.isOpen()) {
+        return false;
+    }
+
     patientTabModel = new QSqlTableModel(this, database);
     patientTabModel->setTable("patient");
     patientTabModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
-    patientTabModel->setSort(patientTabModel->fieldIndex("name"), Qt::AscendingOrder);
 
-    if (!(patientTabModel->select()))
+    int nameField = patientTabModel->fieldIndex("NAME");
+    if (nameField >= 0)
+        patientTabModel->setSort(nameField, Qt::AscendingOrder);
+
+    // 校验表是否存在
+    if (!patientTabModel->select()) {
+        delete patientTabModel;
+        patientTabModel = nullptr;
         return false;
+    }
 
     thePatientSelection = new QItemSelectionModel(patientTabModel);
     return true;
@@ -29,46 +58,102 @@ bool IDatabase::initPatientModel()
 
 int IDatabase::addNewPatient()
 {
-    patientTabModel->insertRow(patientTabModel->rowCount(), QModelIndex());
-    QModelIndex curIndex = patientTabModel->index(patientTabModel->rowCount() - 1, 1);
+    if (!patientTabModel) return -1;
 
-    int curRecNo = curIndex.row();
-    QSqlRecord curRec = patientTabModel->record(curRecNo);
-    curRec.setValue("CREATEDTIMESTAMP", QDateTime::currentDateTime().toString("yyyy-MM-dd"));
-    curRec.setValue("ID", QUuid::createUuid().toString(QUuid::WithoutBraces));
+    int newRow = patientTabModel->rowCount();
 
-    patientTabModel->setRecord(curRecNo, curRec);
+    // 1. 先插入空行
+    if (!patientTabModel->insertRow(newRow)) {
+        qDebug() << "插入行失败：" << patientTabModel->lastError().text();
+        return -1;
+    }
 
-    patientTabModel->setData(patientTabModel->index(curRecNo,
-                                                    patientTabModel->fieldIndex("CREATEDTIMESTAMP")),
+    // 2. 生成UUID
+    QString uuid = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    qDebug() << "新患者 ID:" << uuid;
 
-                             QDateTime::currentDateTime().toString("yyyy-MM-dd"));
+    // 3. 直接通过setData设置ID字段
+    int idColumn = patientTabModel->fieldIndex("ID");
+    if (idColumn >= 0) {
+        QModelIndex idIndex = patientTabModel->index(newRow, idColumn);
+        patientTabModel->setData(idIndex, uuid);
+    } else {
+        qDebug() << "❌ 找不到ID字段！";
+        patientTabModel->removeRow(newRow);
+        return -1;
+    }
 
-    return curIndex.row();
+    // 4. 设置其他默认值
+    int nameColumn = patientTabModel->fieldIndex("NAME");
+    if (nameColumn >= 0) {
+        QModelIndex nameIndex = patientTabModel->index(newRow, nameColumn);
+        patientTabModel->setData(nameIndex, "新患者");
+    }
+
+    // 5. 立即提交这一行到数据库
+    if (!patientTabModel->submitAll()) {
+        qDebug() << "❌ 提交新患者失败：" << patientTabModel->lastError().text();
+        patientTabModel->revertAll();
+        return -1;
+    }
+
+    // 6. 刷新模型（关键！）
+    patientTabModel->select();
+
+    // 7. 验证ID是否已设置
+    QSqlRecord rec = patientTabModel->record(newRow);
+    QString savedID = rec.value("ID").toString();
+
+    return newRow;
 }
 
 bool IDatabase::searchPatient(QString filter)
 {
-    patientTabModel->setFilter((filter));
-    return patientTabModel->select();
+    if (!patientTabModel) return false;
+    patientTabModel->setFilter(filter);
+    bool ok = patientTabModel->select();
+    if (!ok) {
+        qDebug() << "患者搜索失败：" << patientTabModel->lastError().text();
+    }
+    return ok;
 }
 
 bool IDatabase::deleteCurrentPatient()
 {
+    if (!thePatientSelection || !patientTabModel) return false;
+
     QModelIndex curIndex = thePatientSelection->currentIndex();
-    patientTabModel->removeRow(curIndex.row());
-    patientTabModel->submitAll();
-    patientTabModel->select();
+    if (!curIndex.isValid()) return false;
+
+    if (!patientTabModel->removeRow(curIndex.row())) {
+        qDebug() << "删除患者失败：" << patientTabModel->lastError().text();
+        return false;
+    }
+
+    bool submitted = patientTabModel->submitAll();
+    patientTabModel->select(); // 刷新
+    return submitted;
 }
 
 bool IDatabase::submitPatientEdit()
 {
-    return patientTabModel->submitAll();
+    if (!patientTabModel) {
+        return false;
+    }
+
+    bool success = patientTabModel->submitAll();
+
+    // 无论成功与否都刷新
+    patientTabModel->select();
+
+    return success;
 }
 
 void IDatabase::revertPatientEdit()
 {
-    return patientTabModel->revertAll();
+    if (patientTabModel) {
+        patientTabModel->revertAll();
+    }
 }
 
 

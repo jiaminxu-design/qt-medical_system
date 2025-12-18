@@ -56,9 +56,9 @@ private:
     Ui::MasterView *ui;
     WelcomeView *welcomeView;
     DoctorView *doctorView;
-    PatientView *patientView;
+    PatientView *patientView = nullptr;
     LoginView *loginView;
-    PatientEditView *patientEditView;
+    PatientEditView *patientEditView = nullptr;
     RecordView *recordView;
     MedicineView *medicineView;
     AppointmentView *appointmentView;

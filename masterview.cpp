@@ -2,6 +2,7 @@
 #include "ui_masterview.h"
 #include<QDebug>
 #include"idatabase.h"
+#include<QMessageBox>
 
 MasterView::MasterView(QWidget *parent)
     : QWidget(parent)
@@ -81,10 +82,27 @@ void MasterView::goPatientEditView(int rowNo)
 
 void MasterView::goPatientView()
 {
-    qDebug() << "goPatientView";
+    // 如果patientView已存在，先检查是否需要销毁
+    if (patientView != nullptr) {
+        // 先从stackedWidget中移除
+        int index = ui->stackedWidget->indexOf(patientView);
+        if (index >= 0) {
+            ui->stackedWidget->removeWidget(patientView);
+        }
+        // 安全删除
+        delete patientView;
+        patientView = nullptr;
+    }
+
+    // 创建新的PatientView
     patientView = new PatientView(this);
+
+    // 重新连接信号
+    connect(patientView, SIGNAL(goPatientEditView(int)),
+            this, SLOT(goPatientEditView(int)));
+
+    // 添加到stackedWidget
     pushWidgetToStackView(patientView);
-    connect(patientView, SIGNAL(goPatientEditView(int)), this, SLOT(goPatientEditView(int)));
 }
 
 void MasterView::goPreviousView()
@@ -99,6 +117,8 @@ void MasterView::goPreviousView()
         delete widget;
     }
 }
+
+
 
 void MasterView::goRecordView()
 {

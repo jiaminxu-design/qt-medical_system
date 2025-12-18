@@ -14,12 +14,20 @@ PatientView::PatientView(QWidget *parent, int index) :
     ui->tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->tableView->setAlternatingRowColors(true);
 
-    IDatabase &iDatabase = IDatabase::getInstance();
-    if (iDatabase.initPatientModel()) {
-        ui->tableView->setModel(iDatabase.patientTabModel);
-        ui->tableView->setSelectionModel(iDatabase.thePatientSelection);
+    IDatabase &db = IDatabase::getInstance();
+
+    // 永远尝试初始化模型，initPatientModel()会处理重复初始化
+    if (!db.initPatientModel()) {
+        // 可以显示错误信息，但不退出
+        qDebug() << "PatientView: 模型初始化失败";
+        return;
     }
+
+    // 设置模型到表格视图
+    ui->tableView->setModel(db.patientTabModel);
+    ui->tableView->setSelectionModel(db.thePatientSelection);
 }
+
 
 PatientView::~PatientView()
 {
