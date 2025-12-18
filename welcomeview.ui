@@ -6,81 +6,119 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>755</width>
-    <height>496</height>
+    <width>800</width> <!-- 适度加宽窗口，提升操作空间 -->
+    <height>500</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>欢迎</string>
   </property>
-  <widget class="QWidget" name="">
-   <property name="geometry">
-    <rect>
-     <x>190</x>
-     <y>160</y>
-     <width>318</width>
-     <height>69</height>
-    </rect>
+  <!-- 替换固定位置的layoutWidget为全局布局，避免按钮偏移 -->
+  <layout class="QVBoxLayout" name="mainVerticalLayout">
+   <property name="spacing">20</property> <!-- 上下布局间距 -->
+   <property name="contentsMargins">50, 80, 50, 80</property> <!-- 窗口内边距 -->
+   <property name="alignment">
+    <set>Qt::AlignCenter</set> <!-- 整体内容居中 -->
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QPushButton" name="btDoctor">
-        <property name="text">
-         <string>医生管理</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="btDepartment">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>科室管理</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="btPatient">
-        <property name="text">
-         <string>患者管理</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <item>
-       <widget class="QPushButton" name="btRecord">
-        <property name="text">
-         <string>就诊记录与处方</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="btMedicine">
-        <property name="text">
-         <string>药品与库存</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="btAppointment">
-        <property name="text">
-         <string>预约与排班</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-   </layout>
-  </widget>
+
+   <!-- 第一行按钮 -->
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="spacing">15</property> <!-- 按钮间距 -->
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <item>
+      <widget class="QPushButton" name="btDoctor">
+       <property name="text">
+        <string>医生管理</string>
+       </property>
+       <property name="minimumSize"> <!-- 统一按钮尺寸 -->
+        <size>
+         <width>120</width>
+         <height>50</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btDepartment">
+       <property name="minimumSize"> <!-- 移除原0尺寸，统一按钮大小 -->
+        <size>
+         <width>120</width>
+         <height>50</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>科室管理</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btPatient">
+       <property name="text">
+        <string>患者管理</string>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>120</width>
+         <height>50</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+
+   <!-- 第二行按钮 -->
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <property name="spacing">15</property> <!-- 按钮间距 -->
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <item>
+      <widget class="QPushButton" name="btRecord">
+       <property name="text">
+        <string>就诊记录与处方</string>
+       </property>
+       <property name="minimumSize"> <!-- 适配长文本，适度加宽 -->
+        <size>
+         <width>140</width>
+         <height>50</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btMedicine">
+       <property name="text">
+        <string>药品与库存</string>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>120</width>
+         <height>50</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btAppointment">
+       <property name="text">
+        <string>预约与排班</string>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>120</width>
+         <height>50</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>
