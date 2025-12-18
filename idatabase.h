@@ -65,6 +65,17 @@ public:
     QSqlTableModel *doctorTabModel;
     QItemSelectionModel *theDoctorSelection;
 
+    // ---------- Medicine表 ----------
+
+    bool initMedicineModel();
+    int addNewMedicine();
+    bool searchMedicine(QString filter);
+    bool deleteCurrentMedicine();
+    bool submitMedicineEdit();
+    void revertMedicineEdit();
+    QSqlTableModel *medicineTabModel = nullptr;
+    QItemSelectionModel *theMedicineSelection = nullptr;
+
 };
 
 #endif // IDATABASE_H

@@ -102,9 +102,6 @@ IDatabase::IDatabase(QObject *parent) : QObject(parent)
 }
 
 
-
-
-
 // ========== Department表实现（仅用于读取科室数据，供下拉框选择） ==========
 bool IDatabase::initDepartmentModel()
 {
@@ -200,5 +197,118 @@ bool IDatabase::submitDoctorEdit()
 void IDatabase::revertDoctorEdit()
 {
     doctorTabModel->revertAll();
+}
+
+
+// ========== Medicine 表实现 ==========
+
+bool IDatabase::initMedicineModel()
+
+{
+
+    medicineTabModel = new QSqlTableModel(this, database);
+
+    medicineTabModel->setTable("Medicine");
+
+    medicineTabModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
+
+    medicineTabModel->setSort(medicineTabModel->fieldIndex("NAME"), Qt::AscendingOrder);
+
+
+    if (!medicineTabModel->select()) {
+
+        qDebug() << "药品模型初始化失败：" << medicineTabModel->lastError().text();
+
+        return false;
+
+    }
+
+    theMedicineSelection = new QItemSelectionModel(medicineTabModel);
+
+    return true;
+
+}
+
+
+// IDatabase.cpp - addNewMedicine 函数
+int IDatabase::addNewMedicine()
+{
+    // 1. 先校验模型是否初始化
+    if (!medicineTabModel) {
+        qDebug() << "药品模型未初始化！";
+        return -1;
+    }
+
+    // 2. 插入新行（安全写法）
+    int newRow = medicineTabModel->rowCount();
+    if (!medicineTabModel->insertRow(newRow)) {
+        qDebug() << "插入新行失败：" << medicineTabModel->lastError().text();
+        return -1;
+    }
+
+    // 3. 初始化字段（只初始化存在的字段，避免字段名错误）
+    QSqlRecord rec = medicineTabModel->record(newRow);
+    // 仅初始化数据库中存在的字段（关键！避免字段名不匹配）
+    rec.setValue("ID", QUuid::createUuid().toString(QUuid::WithoutBraces));
+    rec.setValue("STOCK", 0);
+    rec.setValue("STOCK_STATUS", "缺货");
+    // 移除 CREATED_TIME（数据库表中无此字段，会导致崩溃）
+    // rec.setValue("CREATED_TIME", QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss"));
+
+    // 4. 设置默认值（兼容空字段）
+    rec.setValue("UNIT", "盒");
+    rec.setValue("PRICE", 0.00);
+    rec.setValue("EXPIRY_DATE", QDate::currentDate().addYears(1).toString("yyyy-MM-dd"));
+
+    // 5. 提交记录（关键！否则新行未真正创建）
+    if (!medicineTabModel->setRecord(newRow, rec)) {
+        qDebug() << "设置记录失败：" << medicineTabModel->lastError().text();
+        medicineTabModel->removeRow(newRow); // 回滚
+        return -1;
+    }
+
+    return newRow;
+}
+
+
+
+bool IDatabase::searchMedicine(QString filter)
+
+{
+
+    medicineTabModel->setFilter(filter);
+
+    return medicineTabModel->select();
+
+}
+
+
+bool IDatabase::deleteCurrentMedicine()
+
+{
+
+    QModelIndex curIndex = theMedicineSelection->currentIndex();
+
+    if (!curIndex.isValid()) return false;
+
+    medicineTabModel->removeRow(curIndex.row());
+
+    bool ret = medicineTabModel->submitAll();
+
+    medicineTabModel->select();
+
+    return ret;
+
+}
+
+
+bool IDatabase::submitMedicineEdit()
+{
+    return medicineTabModel->submitAll();
+}
+
+void IDatabase::revertMedicineEdit()
+{
+    medicineTabModel->revertAll();
 }
 

@@ -112,6 +112,20 @@ void MasterView::goMedicineView()
     qDebug() << "goMedicineView";
     medicineView = new MedicineView(this);
     pushWidgetToStackView(medicineView);
+
+    // 关联“跳转到药品编辑页面”的信号
+    connect(medicineView, &MedicineView::goMedicineEditView, this, &MasterView::goMedicineEditView);
+}
+
+
+void MasterView::goMedicineEditView(int rowNo)
+{
+    qDebug() << "goMedicineEditView";
+    medicineEditView = new MedicineEditView(this, rowNo);
+    pushWidgetToStackView(medicineEditView);
+    connect(medicineEditView, SIGNAL(goPreviousView()), this, SLOT(goPreviousView()));
+
+
 }
 
 void MasterView::goAppointmentView()
