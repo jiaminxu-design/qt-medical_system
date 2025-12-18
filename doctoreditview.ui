@@ -1,18 +1,240 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>doctoreditview</class>
- <widget class="QWidget" name="doctoreditview">
+ <class>DoctorEditView</class>
+ <widget class="QWidget" name="DoctorEditView">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>500</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>医生编辑界面</string>
+   <string>医生信息编辑</string>
   </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+
+   <!-- 基本信息 -->
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>基本信息</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout">
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::ExpandingFieldsGrow</enum>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelID">
+        <property name="text">
+         <string>医生编号：</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="dbEditID">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelName">
+        <property name="text">
+         <string>姓名：</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="dbEditName"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="labelDept">
+        <property name="text">
+         <string>所属科室：</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="dbComboDepartment"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="labelTitle">
+        <property name="text">
+         <string>职称：</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QComboBox" name="dbComboTitle">
+        <item>
+         <property name="text">
+          <string>主任医师</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>副主任医师</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>主治医师</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>医师</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>助理医师</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- 联系方式 -->
+   <item>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>联系方式</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout_2">
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::ExpandingFieldsGrow</enum>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelPhone">
+        <property name="text">
+         <string>手机号：</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="dbEditPhone"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelEmail">
+        <property name="text">
+         <string>邮箱：</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="dbEditEmail"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- 专业信息 -->
+   <item>
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>专业信息</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QLabel" name="labelSpecialty">
+        <property name="text">
+         <string>专业方向：</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QTextEdit" name="dbTextSpecialty">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumHeight">
+         <number>80</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="labelSchedule">
+        <property name="text">
+         <string>排班信息：</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QTextEdit" name="dbTextSchedule">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumHeight">
+         <number>80</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- 按钮区域 -->
+   <item>
+    <widget class="QWidget" name="buttonWidget" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnSave">
+        <property name="text">
+         <string>保存</string>
+        </property>
+        <property name="default">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnCancel">
+        <property name="text">
+         <string>取消</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+  </layout>
  </widget>
  <resources/>
  <connections/>
