@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>AppointmentEditView</class>
+ <widget class="QWidget" name="AppointmentEditView">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>400</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>新增预约</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>15</number>
+   </property>
+   <property name="leftMargin">
+    <number>20</number>
+   </property>
+   <property name="topMargin">
+    <number>20</number>
+   </property>
+   <property name="rightMargin">
+    <number>20</number>
+   </property>
+   <property name="bottomMargin">
+    <number>20</number>
+   </property>
+   <!-- 表单标题 -->
+   <item>
+    <widget class="QLabel" name="labelTitle">
+     <property name="font">
+      <font>
+       <pointsize>14</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>预约信息填写</string>
+     </property>
+    </widget>
+   </item>
+   <!-- 核心表单布局（仅保留数据库存在的字段） -->
+   <item>
+    <layout class="QFormLayout" name="formLayout">
+     <property name="labelAlignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+     <property name="formAlignment">
+      <set>Qt::AlignHCenter|Qt::AlignTop</set>
+     </property>
+     <property name="verticalSpacing">
+      <number>12</number>
+     </property>
+     <!-- 患者选择（对应 PATIENT_ID） -->
+     <item row="0" column="0">
+      <widget class="QLabel" name="labelPatient">
+       <property name="toolTip">
+        <string>选择预约的患者</string>
+       </property>
+       <property name="text">
+        <string>患者：</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QComboBox" name="comboPatient">
+       <property name="minimumSize">
+        <size>
+         <width>250</width>
+         <height>0</height>
+        </size>
+       </property>
+       <item>
+        <property name="text">
+         <string>请选择患者（必填）</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <!-- 医生选择（对应 DOCTOR_ID） -->
+     <item row="1" column="0">
+      <widget class="QLabel" name="labelDoctor">
+       <property name="toolTip">
+        <string>选择接诊医生</string>
+       </property>
+       <property name="text">
+        <string>医生：</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="comboDoctor">
+       <property name="minimumSize">
+        <size>
+         <width>250</width>
+         <height>0</height>
+        </size>
+       </property>
+       <item>
+        <property name="text">
+         <string>请选择医生（必填）</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <!-- 预约日期（对应 APPOINT_DATE） -->
+     <item row="2" column="0">
+      <widget class="QLabel" name="labelDate">
+       <property name="toolTip">
+        <string>选择预约就诊日期</string>
+       </property>
+       <property name="text">
+        <string>预约日期：</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QDateEdit" name="dateEdit">
+       <property name="minimumSize">
+        <size>
+         <width>250</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="calendarPopup">
+        <bool>true</bool>
+       </property>
+       <property name="date">
+        <date>
+         <year>2025</year>
+         <month>12</month>
+         <day>27</day>
+        </date>
+       </property>
+      </widget>
+     </item>
+     <!-- 预约状态（对应 STATUS） -->
+     <item row="3" column="0">
+      <widget class="QLabel" name="labelStatus">
+       <property name="toolTip">
+        <string>选择预约状态</string>
+       </property>
+       <property name="text">
+        <string>预约状态：</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QComboBox" name="comboStatus">
+       <property name="minimumSize">
+        <size>
+         <width>250</width>
+         <height>0</height>
+        </size>
+       </property>
+       <item>
+        <property name="text">
+         <string>未确认</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>已确认</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>已取消</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <!-- 按钮区域 -->
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QPushButton" name="btSave">
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>35</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>保存预约</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btCancel">
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>35</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>取消</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

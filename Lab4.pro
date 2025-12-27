@@ -9,6 +9,7 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    appointmenteditview.cpp \
     appointmentview.cpp \
     doctoreditview.cpp \
     doctorview.cpp \
@@ -25,6 +26,7 @@ SOURCES += \
     welcomeview.cpp
 
 HEADERS += \
+    appointmenteditview.h \
     appointmentview.h \
     doctoreditview.h \
     doctorview.h \
@@ -40,6 +42,7 @@ HEADERS += \
     welcomeview.h
 
 FORMS += \
+    appointmenteditview.ui \
     appointmentview.ui \
     doctoreditview.ui \
     doctorview.ui \
