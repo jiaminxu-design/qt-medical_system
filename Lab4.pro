@@ -20,6 +20,7 @@ SOURCES += \
     medicineview.cpp \
     patienteditview.cpp \
     patientview.cpp \
+    recordeditview.cpp \
     recordview.cpp \
     welcomeview.cpp
 
@@ -34,6 +35,7 @@ HEADERS += \
     medicineview.h \
     patienteditview.h \
     patientview.h \
+    recordeditview.h \
     recordview.h \
     welcomeview.h
 
@@ -47,6 +49,7 @@ FORMS += \
     medicineview.ui \
     patienteditview.ui \
     patientview.ui \
+    recordeditview.ui \
     recordview.ui \
     welcomeview.ui
 

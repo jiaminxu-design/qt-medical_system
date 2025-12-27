@@ -379,3 +379,175 @@ void IDatabase::revertMedicineEdit()
     medicineTabModel->revertAll();
 }
 
+
+// ========== Record表（就诊记录）实现 ==========
+bool IDatabase::initRecordModel()
+{
+    // 释放旧模型
+    if (recordTabModel != nullptr) {
+        delete theRecordSelection;
+        delete recordTabModel;
+        recordTabModel = nullptr;
+        theRecordSelection = nullptr;
+    }
+
+    // 校验数据库连接
+    if (!database.isOpen()) {
+        qDebug() << "数据库未打开！";
+        return false;
+    }
+
+    // 初始化模型
+    recordTabModel = new QSqlTableModel(this, database);
+    recordTabModel->setTable("MedicalRecord"); // 数据库中的就诊记录表名
+    recordTabModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
+
+    // 按就诊日期降序排序
+    int dateField = recordTabModel->fieldIndex("VISIT_DATE");
+    if (dateField >= 0)
+        recordTabModel->setSort(dateField, Qt::DescendingOrder);
+
+    // 加载数据
+    if (!recordTabModel->select()) {
+        qDebug() << "就诊记录模型初始化失败：" << recordTabModel->lastError().text();
+        delete recordTabModel;
+        recordTabModel = nullptr;
+        return false;
+    }
+
+    // 初始化选择模型
+    theRecordSelection = new QItemSelectionModel(recordTabModel);
+    return true;
+}
+
+//int IDatabase::addNewRecord()
+//{
+//    if (!recordTabModel) return -1;
+
+//    // 插入新行
+//    int newRow = recordTabModel->rowCount();
+//    if (!recordTabModel->insertRow(newRow)) {
+//        qDebug() << "插入就诊记录行失败：" << recordTabModel->lastError().text();
+//        return -1;
+//    }
+
+//    // 初始化默认值
+//    QSqlRecord rec = recordTabModel->record(newRow);
+//    rec.setValue("ID", QUuid::createUuid().toString(QUuid::WithoutBraces)); // 唯一ID
+//    rec.setValue("VISIT_DATE", QDate::currentDate().toString("yyyy-MM-dd")); // 默认当前日期
+//    rec.setValue("VISIT_TYPE", "门诊"); // 默认就诊类型
+
+//    if (!recordTabModel->setRecord(newRow, rec)) {
+//        qDebug() << "设置就诊记录默认值失败：" << recordTabModel->lastError().text();
+//        recordTabModel->removeRow(newRow);
+//        return -1;
+//    }
+
+//    return newRow;
+//}
+
+//int IDatabase::addNewRecord()
+//{
+//    if (!recordTabModel) return -1;
+
+//    // 插入新行（仅在内存中，不自动提交到数据库）
+//    int newRow = recordTabModel->rowCount();
+//    if (!recordTabModel->insertRow(newRow)) {
+//        qDebug() << "插入就诊记录行失败：" << recordTabModel->lastError().text();
+//        return -1;
+//    }
+
+//    // 初始化默认值（仅在内存中）
+//    QSqlRecord rec = recordTabModel->record(newRow);
+//    rec.setValue("ID", QUuid::createUuid().toString(QUuid::WithoutBraces)); // 唯一ID
+//    rec.setValue("VISIT_DATE", QDate::currentDate().toString("yyyy-MM-dd")); // 默认当前日期
+//    rec.setValue("VISIT_TYPE", "门诊"); // 默认就诊类型
+//    recordTabModel->setRecord(newRow, rec);
+
+//    // 不自动提交，等编辑完成后由save按钮提交
+//    return newRow;
+//}
+
+//// IDatabase.cpp
+//int IDatabase::addNewRecord()
+//{
+//    if (!recordTabModel) return -1;
+//    // 仅返回“待新增行号”，不插入任何行（编辑页保存时才插入）
+//    return recordTabModel->rowCount();
+//}
+
+int IDatabase::addNewRecord()
+{
+    if (!recordTabModel) return -1;
+    // 仅返回待新增行号，不插入任何行（编辑页保存时才插入）
+    return recordTabModel->rowCount();
+}
+
+
+//bool IDatabase::searchRecord(QString filter)
+//{
+//    if (!recordTabModel) return false;
+//    recordTabModel->setFilter(filter);
+//    bool ok = recordTabModel->select();
+//    if (!ok) {
+//        qDebug() << "就诊记录搜索失败：" << recordTabModel->lastError().text();
+//    }
+//    return ok;
+//}
+
+// IDatabase.cpp - searchRecord 函数
+bool IDatabase::searchRecord(QString filter)
+{
+    if (!recordTabModel) return false;
+
+    // 清空旧过滤条件（避免叠加）
+    recordTabModel->setFilter("");
+    if (!filter.isEmpty()) {
+        recordTabModel->setFilter(filter);
+    }
+
+    bool ok = recordTabModel->select();
+    if (!ok) {
+        qDebug() << "就诊记录搜索失败：" << recordTabModel->lastError().text()
+                 << "过滤条件：" << filter;
+        // 搜索失败时恢复显示所有数据
+        recordTabModel->setFilter("");
+        recordTabModel->select();
+    }
+    return ok;
+}
+
+
+bool IDatabase::deleteCurrentRecord()
+{
+    if (!theRecordSelection || !recordTabModel) return false;
+
+    QModelIndex curIndex = theRecordSelection->currentIndex();
+    if (!curIndex.isValid()) return false;
+
+    if (!recordTabModel->removeRow(curIndex.row())) {
+        qDebug() << "删除就诊记录失败：" << recordTabModel->lastError().text();
+        return false;
+    }
+
+    bool submitted = recordTabModel->submitAll();
+    recordTabModel->select(); // 刷新
+    return submitted;
+}
+
+bool IDatabase::submitRecordEdit()
+{
+    if (!recordTabModel) return false;
+    bool ret = recordTabModel->submitAll();
+    if (!ret) {
+        qDebug() << "提交就诊记录修改失败：" << recordTabModel->lastError().text();
+    }
+    return ret;
+}
+
+void IDatabase::revertRecordEdit()
+{
+    if (recordTabModel) {
+        recordTabModel->revertAll();
+    }
+}

@@ -76,6 +76,15 @@ public:
     QSqlTableModel *medicineTabModel = nullptr;
     QItemSelectionModel *theMedicineSelection = nullptr;
 
+    // ---------- Record表（就诊记录） ----------
+    bool initRecordModel();          // 初始化就诊记录模型
+    int addNewRecord();              // 新增就诊记录
+    bool searchRecord(QString filter);// 搜索就诊记录
+    bool deleteCurrentRecord();      // 删除当前就诊记录
+    bool submitRecordEdit();         // 提交就诊记录修改
+    void revertRecordEdit();         // 撤销就诊记录修改
+    QSqlTableModel *recordTabModel = nullptr;      // 就诊记录模型
+    QItemSelectionModel *theRecordSelection = nullptr; // 就诊记录选择模型
 };
 
 #endif // IDATABASE_H

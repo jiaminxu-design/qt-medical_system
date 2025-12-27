@@ -219,12 +219,44 @@ void MasterView::goPreviousView()
 
 
 
+//void MasterView::goRecordView()
+//{
+//    qDebug() << "goRecordView";
+//    recordView = new RecordView(this);
+//    pushWidgetToStackView(recordView);
+//}
+
+
+// 修改 goRecordView 绑定跳转信号
 void MasterView::goRecordView()
 {
     qDebug() << "goRecordView";
     recordView = new RecordView(this);
     pushWidgetToStackView(recordView);
+    // 绑定跳转到编辑页面的信号（和药品模块一致）
+    connect(recordView, SIGNAL(goRecordEditView(int)), this, SLOT(goRecordEditView(int)));
 }
+
+// 完善 goRecordEditView 方法
+//void MasterView::goRecordEditView(int rowNo)
+//{
+//    qDebug() << "goRecordEditView";
+//    recordEditView = new RecordEditView(this,
+//                                        rowNo); // 注意变量名统一（建议改为recordEditView）
+//    pushWidgetToStackView(recordEditView);
+//    connect(recordEditView, SIGNAL(goPreviousView()), this, SLOT(goPreviousView()));
+//}
+
+void MasterView::goRecordEditView(int rowNo)
+{
+    qDebug() << "goRecordEditView";
+    // 确保创建的是独立页面，且父对象是MasterView（不是RecordView）
+    RecordEditView *editView = new RecordEditView(this, rowNo);
+    pushWidgetToStackView(editView);
+    connect(editView, &RecordEditView::goPreviousView, this, &MasterView::goPreviousView);
+}
+
+
 
 void MasterView::goMedicineView()
 {
