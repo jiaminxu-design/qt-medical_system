@@ -420,61 +420,6 @@ bool IDatabase::initRecordModel()
     return true;
 }
 
-//int IDatabase::addNewRecord()
-//{
-//    if (!recordTabModel) return -1;
-
-//    // 插入新行
-//    int newRow = recordTabModel->rowCount();
-//    if (!recordTabModel->insertRow(newRow)) {
-//        qDebug() << "插入就诊记录行失败：" << recordTabModel->lastError().text();
-//        return -1;
-//    }
-
-//    // 初始化默认值
-//    QSqlRecord rec = recordTabModel->record(newRow);
-//    rec.setValue("ID", QUuid::createUuid().toString(QUuid::WithoutBraces)); // 唯一ID
-//    rec.setValue("VISIT_DATE", QDate::currentDate().toString("yyyy-MM-dd")); // 默认当前日期
-//    rec.setValue("VISIT_TYPE", "门诊"); // 默认就诊类型
-
-//    if (!recordTabModel->setRecord(newRow, rec)) {
-//        qDebug() << "设置就诊记录默认值失败：" << recordTabModel->lastError().text();
-//        recordTabModel->removeRow(newRow);
-//        return -1;
-//    }
-
-//    return newRow;
-//}
-
-//int IDatabase::addNewRecord()
-//{
-//    if (!recordTabModel) return -1;
-
-//    // 插入新行（仅在内存中，不自动提交到数据库）
-//    int newRow = recordTabModel->rowCount();
-//    if (!recordTabModel->insertRow(newRow)) {
-//        qDebug() << "插入就诊记录行失败：" << recordTabModel->lastError().text();
-//        return -1;
-//    }
-
-//    // 初始化默认值（仅在内存中）
-//    QSqlRecord rec = recordTabModel->record(newRow);
-//    rec.setValue("ID", QUuid::createUuid().toString(QUuid::WithoutBraces)); // 唯一ID
-//    rec.setValue("VISIT_DATE", QDate::currentDate().toString("yyyy-MM-dd")); // 默认当前日期
-//    rec.setValue("VISIT_TYPE", "门诊"); // 默认就诊类型
-//    recordTabModel->setRecord(newRow, rec);
-
-//    // 不自动提交，等编辑完成后由save按钮提交
-//    return newRow;
-//}
-
-//// IDatabase.cpp
-//int IDatabase::addNewRecord()
-//{
-//    if (!recordTabModel) return -1;
-//    // 仅返回“待新增行号”，不插入任何行（编辑页保存时才插入）
-//    return recordTabModel->rowCount();
-//}
 
 int IDatabase::addNewRecord()
 {
@@ -482,18 +427,6 @@ int IDatabase::addNewRecord()
     // 仅返回待新增行号，不插入任何行（编辑页保存时才插入）
     return recordTabModel->rowCount();
 }
-
-
-//bool IDatabase::searchRecord(QString filter)
-//{
-//    if (!recordTabModel) return false;
-//    recordTabModel->setFilter(filter);
-//    bool ok = recordTabModel->select();
-//    if (!ok) {
-//        qDebug() << "就诊记录搜索失败：" << recordTabModel->lastError().text();
-//    }
-//    return ok;
-//}
 
 // IDatabase.cpp - searchRecord 函数
 bool IDatabase::searchRecord(QString filter)

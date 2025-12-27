@@ -26,7 +26,7 @@
      <item>
       <widget class="QLineEdit" name="txtSearch">
        <property name="placeholderText">
-        <string>输入患者名称</string>
+        <string>输入患者名称或医生名字</string>
        </property>
       </widget>
      </item>

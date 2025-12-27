@@ -1,18 +1,3 @@
-//#include "recordview.h"
-//#include "ui_recordview.h"
-
-//RecordView::RecordView(QWidget *parent) :
-//    QWidget(parent),
-//    ui(new Ui::RecordView)
-//{
-//    ui->setupUi(this);
-//}
-
-//RecordView::~RecordView()
-//{
-//    delete ui;
-//}
-
 #include "recordeditview.h"
 #include "recordview.h"
 #include "ui_recordview.h"
@@ -59,30 +44,13 @@ RecordView::~RecordView()
     delete ui;
 }
 
-// 搜索按钮
-//void RecordView::on_btSearch_clicked()
-//{
-//    QString searchText = ui->txtSearch->text().trimmed();
-//    QStringList filters;
-
-//    // 模糊搜索患者名称
-//    if (!searchText.isEmpty())
-//        filters << QString("PATIENT_NAME LIKE '%%1%'").arg(searchText);
-
-//    // 组合筛选条件
-//    QString finalFilter = filters.join(" AND ");
-//    db.searchRecord(finalFilter);
-//}
-
-// RecordView.cpp - on_btSearch_clicked 函数
+//on_btSearch_clicked 函数
 void RecordView::on_btSearch_clicked()
 {
     QString searchText = ui->txtSearch->text().trimmed();
     QStringList filters;
 
     if (!searchText.isEmpty()) {
-        // 错误根源：数据库中无 PATIENT_NAME 字段，需关联 patient 表搜索
-        // 正确写法：通过 PATIENT_ID 关联 patient 表的 NAME 字段模糊搜索
         QString filter = QString(
                              "PATIENT_ID IN (SELECT ID FROM patient WHERE NAME LIKE '%%1%') OR "
                              "DOCTOR_ID IN (SELECT ID FROM Doctor WHERE NAME LIKE '%%1%') OR "
@@ -100,62 +68,7 @@ void RecordView::on_btSearch_clicked()
 }
 
 
-//// 新增按钮
-//void RecordView::on_btAdd_clicked()
-//{
-//    // 1. 新增就诊记录行
-//    int newRow = db.addNewRecord();
-//    if (newRow < 0) {
-//        QMessageBox::warning(this, "错误", "创建新就诊记录失败！");
-//        return;
-//    }
-
-//    // 2. 选中新行
-//    QModelIndex newIndex = db.recordTabModel->index(newRow, 0);
-//    db.theRecordSelection->select(newIndex, QItemSelectionModel::Select | QItemSelectionModel::Rows);
-
-//    // 3. 跳转到编辑页面（和药品模块一致）
-//    emit goRecordEditView(newIndex.row());
-//}
-
-//void RecordView::on_btAdd_clicked()
-//{
-//    if (!db.recordTabModel) {
-//        QMessageBox::warning(this, "提示", "就诊记录模型未初始化，无法添加！");
-//        return;
-//    }
-
-//    // 1. 新增内存中的空行
-//    int newRow = db.addNewRecord();
-//    if (newRow < 0) {
-//        QMessageBox::warning(this, "错误", "创建新就诊记录失败！");
-//        return;
-//    }
-
-//    // 2. 选中新行
-//    QModelIndex newIndex = db.recordTabModel->index(newRow, 0);
-//    db.theRecordSelection->select(newIndex, QItemSelectionModel::Select | QItemSelectionModel::Rows);
-
-//    // 3. 跳转到编辑页面（必须填写内容后才能保存，否则取消会删除空行）
-//    emit goRecordEditView(newIndex.row());
-//}
-
-// RecordView.cpp
-//void RecordView::on_btAdd_clicked()
-//{
-//    if (!db.recordTabModel) {
-//        QMessageBox::warning(this, "提示", "就诊记录模型未初始化，无法添加！");
-//        return;
-//    }
-//    // 仅获取待新增行号，不插入行
-//    int newRow = db.addNewRecord();
-//    if (newRow < 0) {
-//        QMessageBox::warning(this, "错误", "创建新就诊记录失败！");
-//        return;
-//    }
-//    // 跳转编辑页，传递“待新增行号”
-//    emit goRecordEditView(newRow);
-//}
+// 新增按钮
 void RecordView::on_btAdd_clicked()
 {
     // 1. 先校验模型是否初始化（移到最前面）
@@ -170,57 +83,42 @@ void RecordView::on_btAdd_clicked()
         QMessageBox::warning(this, "错误", "创建新就诊记录失败！");
         return;
     }
-
-//    // 3. 创建编辑页对象
-//    RecordEditView *editView = new RecordEditView(this, newRow);
-//    // 绑定刷新信号
-//    connect(editView, &RecordEditView::refreshRecordTable, this, &RecordView::onRefreshRecordTable);
-
-    // 4. 跳转编辑页
+    // 3. 跳转编辑页
     emit goRecordEditView(newRow);
 }
 
 
-
-
-
-
-// 编辑按钮
-//void RecordView::on_btEdit_clicked()
-//{
-//    // 检查是否选中行
-//    QModelIndex curIndex = db.theRecordSelection->currentIndex();
-//    if (!curIndex.isValid()) {
-//        QMessageBox::warning(this, "提示", "请先选中要编辑的就诊记录！");
-//        return;
-//    }
-
-//    // 跳转到编辑页面
-//    emit goRecordEditView(curIndex.row());
-//}
-
-// RecordView.cpp
+//编辑按钮
 void RecordView::on_btEdit_clicked()
 {
-    // 1. 先声明并获取选中行（移到最前面）
+    // 1. 强化校验：必须选中有效行（且行号在合法范围内）
     QModelIndex curIndex = db.theRecordSelection->currentIndex();
-
-    // 2. 严格校验：必须选中有效行
-    if (!curIndex.isValid() || curIndex.row() >= db.recordTabModel->rowCount()) {
-        QMessageBox::warning(this, "提示", "请先选中一条有效的就诊记录再编辑！");
+    if (!curIndex.isValid()) {
+        QMessageBox::warning(this, "提示", "请先选中一条就诊记录再编辑！");
+        return;
+    }
+    int row = curIndex.row();
+    if (row < 0 || row >= db.recordTabModel->rowCount()) {
+        QMessageBox::warning(this, "提示", "选中的记录无效，请重新选择！");
         return;
     }
 
-    // 3. 再创建编辑页对象（此时 curIndex 已定义）
-    RecordEditView *editView = new RecordEditView(this, curIndex.row());
-    // 绑定刷新信号
-    connect(editView, &RecordEditView::refreshRecordTable, this, &RecordView::onRefreshRecordTable);
+    // 2. 复用添加页的独立窗口逻辑（解决界面显示问题）
+    // 找到MasterView作为父对象，避免嵌入RecordView
+    QWidget *masterView = this->parentWidget();
+    RecordEditView *editView = new RecordEditView(masterView, row);
 
-    // 4. 跳转编辑页
-    emit goRecordEditView(curIndex.row());
+    // 3. 绑定返回信号：关闭编辑页时彻底销毁，刷新列表
+    connect(editView, &RecordEditView::goPreviousView, this, [ = ]() {
+        editView->deleteLater(); // 彻底销毁编辑页，避免残留
+        this->onRefreshRecordTable(); // 刷新RecordView列表
+    });
+
+    // 4. 强制编辑页为独立窗口（和添加页一致）
+    editView->setWindowFlags(Qt::Window | Qt::WindowCloseButtonHint);
+    editView->setWindowTitle("编辑就诊记录"); // 区分添加页标题
+    editView->show(); // 独立窗口显示，不会嵌入RecordView
 }
-
-
 
 // 删除按钮
 void RecordView::on_btDelete_clicked()

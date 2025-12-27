@@ -36,12 +36,6 @@ void MasterView::goWelcomeView()
     qDebug() << "goWelcomeView";
     welcomeView = new WelcomeView(this);
     pushWidgetToStackView(welcomeView);
-
-//    connect(welcomeView, SIGNAL(goDoctorView()), this, SLOT(goDoctorView()));
-//    connect(welcomeView, SIGNAL(goPatientView()), this, SLOT(goPatientView()));
-//    connect(welcomeView, SIGNAL(goRecordView()), this, SLOT(goRecordView()));
-//    connect(welcomeView, SIGNAL(goMedicineView()), this, SLOT(goMedicineView()));
-//    connect(welcomeView, SIGNAL(goAppointmentView()), this, SLOT(goAppointmentView()));
     // 使用Qt::UniqueConnection确保信号只连接一次
     connect(welcomeView, SIGNAL(goDoctorView()),
             this, SLOT(goDoctorView()), Qt::UniqueConnection);
@@ -93,50 +87,6 @@ void MasterView::goPatientEditView(int rowNo)
 
 }
 
-//void MasterView::goPatientView()
-//{
-//    // 如果patientView已存在，先检查是否需要销毁
-//    if (patientView != nullptr) {
-//        // 先从stackedWidget中移除
-//        int index = ui->stackedWidget->indexOf(patientView);
-//        if (index >= 0) {
-//            ui->stackedWidget->removeWidget(patientView);
-//        }
-//        // 安全删除
-//        delete patientView;
-//        patientView = nullptr;
-//    }
-
-//    // 创建新的PatientView
-//    patientView = new PatientView(this);
-
-//    // 重新连接信号
-//    connect(patientView, SIGNAL(goPatientEditView(int)),
-//            this, SLOT(goPatientEditView(int)));
-
-//    // 添加到stackedWidget
-//    pushWidgetToStackView(patientView);
-//}
-
-//void MasterView::goPatientView()
-//{
-//    qDebug() << "goPatientView";
-
-//    // 如果页面已存在，直接显示；否则新建
-//    if (patientView == nullptr) {
-//        patientView = new PatientView(this);
-//        connect(patientView, SIGNAL(goPatientEditView(int)),
-//                this, SLOT(goPatientEditView(int)));
-//    } else {
-//        // 刷新现有视图的数据
-//        if (IDatabase::getInstance().patientTabModel) {
-//            IDatabase::getInstance().patientTabModel->select();
-//        }
-//    }
-
-//    pushWidgetToStackView(patientView);
-//}
-
 void MasterView::goPatientView()
 {
     qDebug() << "goPatientView";
@@ -163,19 +113,6 @@ void MasterView::goPatientView()
 
     pushWidgetToStackView(patientView);
 }
-
-//void MasterView::goPreviousView()
-//{
-//    int count = ui->stackedWidget->count();
-//    if (count > 1) {
-//        ui->stackedWidget->setCurrentIndex((count - 2));
-//        ui->labelTitle->setText(ui->stackedWidget->currentWidget()->windowTitle());
-
-//        QWidget *widget = ui->stackedWidget->widget(count - 1);
-//        ui->stackedWidget->removeWidget(widget);
-//        delete widget;
-//    }
-//}
 
 void MasterView::goPreviousView()
 {
@@ -205,6 +142,8 @@ void MasterView::goPreviousView()
             doctorEditView = nullptr;
         } else if (widget == medicineEditView) {
             medicineEditView = nullptr;
+        } else if (widget == recordEditView) {
+            recordEditView = nullptr;
         }
 
         // 切换视图
@@ -217,42 +156,21 @@ void MasterView::goPreviousView()
     }
 }
 
-
-
-//void MasterView::goRecordView()
-//{
-//    qDebug() << "goRecordView";
-//    recordView = new RecordView(this);
-//    pushWidgetToStackView(recordView);
-//}
-
-
-// 修改 goRecordView 绑定跳转信号
 void MasterView::goRecordView()
 {
     qDebug() << "goRecordView";
-    recordView = new RecordView(this);
+    RecordView *recordView = new RecordView(this);
     pushWidgetToStackView(recordView);
-    // 绑定跳转到编辑页面的信号（和药品模块一致）
-    connect(recordView, SIGNAL(goRecordEditView(int)), this, SLOT(goRecordEditView(int)));
+    // 绑定“跳转到编辑页”的信号（由RecordView发送，MasterView接收）
+    connect(recordView, &RecordView::goRecordEditView, this, &MasterView::goRecordEditView);
 }
 
-// 完善 goRecordEditView 方法
-//void MasterView::goRecordEditView(int rowNo)
-//{
-//    qDebug() << "goRecordEditView";
-//    recordEditView = new RecordEditView(this,
-//                                        rowNo); // 注意变量名统一（建议改为recordEditView）
-//    pushWidgetToStackView(recordEditView);
-//    connect(recordEditView, SIGNAL(goPreviousView()), this, SLOT(goPreviousView()));
-//}
-
-void MasterView::goRecordEditView(int rowNo)
+void MasterView::goRecordEditView(int row)
 {
     qDebug() << "goRecordEditView";
-    // 确保创建的是独立页面，且父对象是MasterView（不是RecordView）
-    RecordEditView *editView = new RecordEditView(this, rowNo);
+    RecordEditView *editView = new RecordEditView(this, row);
     pushWidgetToStackView(editView);
+    // 绑定“返回上一页”的信号
     connect(editView, &RecordEditView::goPreviousView, this, &MasterView::goPreviousView);
 }
 
