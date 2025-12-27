@@ -13,6 +13,13 @@ void IDatabase::initDatabase()
         qDebug() << "open database is ok";
 }
 
+// 在 IDatabase.cpp 顶部（或任意位置）添加
+IDatabase &IDatabase::getInstance()
+{
+    static IDatabase instance; // 静态单例实例
+    return instance;
+}
+
 
 bool IDatabase::initPatientModel()
 {
@@ -484,3 +491,107 @@ void IDatabase::revertRecordEdit()
         recordTabModel->revertAll();
     }
 }
+
+// ========== 预约表（Appointment）实现 ==========
+bool IDatabase::initAppointmentModel()
+{
+    // 释放旧模型
+    if (appointmentTabModel != nullptr) {
+        delete theAppointmentSelection;
+        delete appointmentTabModel;
+        appointmentTabModel = nullptr;
+        theAppointmentSelection = nullptr;
+    }
+
+    // 校验数据库连接
+    if (!database.isOpen()) {
+        qDebug() << "数据库未打开！";
+        return false;
+    }
+
+    // 1. 创建表（如果不存在）
+    QSqlQuery query;
+    QString createSql = R"(
+        CREATE TABLE IF NOT EXISTS Appointment (
+            ID TEXT PRIMARY KEY,
+            PATIENT_ID TEXT,
+            DOCTOR_ID TEXT,
+            APPOINT_DATE TEXT,
+            STATUS TEXT
+        )
+    )";
+    if (!query.exec(createSql)) {
+        qDebug() << "创建Appointment表失败：" << query.lastError().text();
+        return false;
+    }
+
+    // 2. 初始化模型
+    appointmentTabModel = new QSqlTableModel(this, database);
+    appointmentTabModel->setTable("Appointment");
+    appointmentTabModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
+
+    // 按预约日期排序
+    int dateField = appointmentTabModel->fieldIndex("APPOINT_DATE");
+    if (dateField >= 0)
+        appointmentTabModel->setSort(dateField, Qt::DescendingOrder);
+
+    // 加载数据
+    if (!appointmentTabModel->select()) {
+        qDebug() << "预约模型初始化失败：" << appointmentTabModel->lastError().text();
+        delete appointmentTabModel;
+        appointmentTabModel = nullptr;
+        return false;
+    }
+
+    // 初始化选择模型
+    theAppointmentSelection = new QItemSelectionModel(appointmentTabModel);
+    return true;
+}
+
+int IDatabase::addNewAppointment()
+{
+    if (!appointmentTabModel) return -1;
+
+    int newRow = appointmentTabModel->rowCount();
+    if (!appointmentTabModel->insertRow(newRow)) {
+        qDebug() << "插入预约行失败：" << appointmentTabModel->lastError().text();
+        return -1;
+    }
+
+    // 生成UUID
+    QString uuid = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    QModelIndex idIndex = appointmentTabModel->index(newRow, appointmentTabModel->fieldIndex("ID"));
+    appointmentTabModel->setData(idIndex, uuid);
+
+    // 默认状态
+    QModelIndex statusIndex = appointmentTabModel->index(newRow,
+                                                         appointmentTabModel->fieldIndex("STATUS"));
+    appointmentTabModel->setData(statusIndex, "未确认");
+
+    return newRow;
+}
+
+bool IDatabase::deleteCurrentAppointment()
+{
+    if (!theAppointmentSelection || !appointmentTabModel) return false;
+
+    QModelIndex curIndex = theAppointmentSelection->currentIndex();
+    if (!curIndex.isValid()) return false;
+
+    if (!appointmentTabModel->removeRow(curIndex.row())) {
+        qDebug() << "删除预约失败：" << appointmentTabModel->lastError().text();
+        return false;
+    }
+
+    bool submitted = appointmentTabModel->submitAll();
+    appointmentTabModel->select();
+    return submitted;
+}
+
+QSqlQuery IDatabase::querySql(const QString &sql)
+{
+    QSqlQuery query(database);
+    query.exec(sql);
+    return query;
+}
+
