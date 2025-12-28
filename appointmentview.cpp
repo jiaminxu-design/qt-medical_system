@@ -13,16 +13,37 @@ AppointmentView::AppointmentView(QWidget *parent)
     this->setWindowTitle("预约排班管理");
     initUI();
 
-    // 提前绑定：只要新增窗口发送appointmentSaved，就刷新表格
+    // 最终版：信号绑定窗口创建逻辑（已修正）
     connect(this, &AppointmentView::goAppointmentEditView, this, [ = ](int rowNo) {
+        // 1. 关闭所有已打开的编辑窗口（避免重叠）
+        QList<QWidget *> allWindows = QApplication::topLevelWidgets();
+        for (QWidget *w : allWindows) {
+            AppointmentEditView *editWin = qobject_cast<AppointmentEditView *>(w);
+            if (editWin) {
+                editWin->close();
+                editWin->deleteLater();
+            }
+        }
+
+        // 2. 创建窗口：父窗口必须为 nullptr（关键！）
         AppointmentEditView *editView = new AppointmentEditView(nullptr, rowNo);
-        connect(editView, &AppointmentEditView::appointmentSaved, this, &AppointmentView::refreshTable);
-        connect(editView, &AppointmentEditView::goPreviousView, editView, &QWidget::close);
-        editView->setWindowFlags(Qt::Dialog);
+
+        // ========== 新增这1行（核心修复） ==========
+        editView->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+        // 区分新增/编辑标题
+        editView->setWindowTitle(rowNo == -1 ? "新增预约" : "编辑预约");
+
+        // 3. 绑定信号（保留你的逻辑）
+        connect(editView, &AppointmentEditView::appointmentSaved,
+                this, &AppointmentView::refreshTable, Qt::QueuedConnection);
+        connect(editView, &AppointmentEditView::goPreviousView,
+                editView, &QWidget::close, Qt::QueuedConnection);
+
+        // 4. 显示窗口（直接show，不做任何布局添加）
         editView->show();
     });
 
-    // 选中事件绑定
+    // 选中事件绑定：控制编辑/删除按钮启用状态
     connect(ui->tableView->selectionModel(), &QItemSelectionModel::selectionChanged,
     this, [ = ](const QItemSelection & s) {
         bool hasSel = !s.isEmpty();
@@ -30,6 +51,7 @@ AppointmentView::AppointmentView(QWidget *parent)
         ui->btDelete->setEnabled(hasSel);
     });
 }
+
 
 AppointmentView::~AppointmentView()
 {
@@ -77,7 +99,6 @@ void AppointmentView::initUI()
 
     // ========== 5. 强制刷新模型数据（解决数据不加载） ==========
     appointmentModel->select();
-    qDebug() << "预约模型最终记录数：" << appointmentModel->rowCount(); // 验证数据
 
     // ========== 6. 修复按钮状态（编辑/删除默认禁用） ==========
     ui->btEdit->setEnabled(false);
@@ -116,31 +137,13 @@ void AppointmentView::refreshTable()
 
     // 4. 隐藏ID列
     ui->tableView->hideColumn(model->fieldIndex("ID"));
-
-    qDebug() << "刷新后预约记录数：" << model->rowCount();
 }
+
 
 void AppointmentView::on_btAdd_clicked()
 {
-    // ========== 关键：弹窗独立（解决界面重叠） ==========
-    AppointmentEditView *editView = new AppointmentEditView(nullptr, -1);
-    editView->setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
-    editView->setWindowTitle("新增预约");
-
-    // ========== 绑定保存成功信号（核心：触发表格刷新） ==========
-    // 先检查槽函数是否存在（避免 No such slot 警告）
-    if (this->metaObject()->indexOfSlot("refreshTable()") != -1) {
-        connect(editView, &AppointmentEditView::appointmentSaved,
-                this, &AppointmentView::refreshTable, Qt::QueuedConnection); // 队列连接防止界面卡顿
-    }
-
-    // ========== 绑定关闭信号 ==========
-    connect(editView, &AppointmentEditView::goPreviousView, editView, &QWidget::close);
-
-    // ========== 显示弹窗 ==========
-    editView->show();
+    emit goAppointmentEditView(-1); // 仅触发信号，由统一逻辑创建独立窗口
 }
-
 
 void AppointmentView::on_btEdit_clicked()
 {
@@ -151,6 +154,8 @@ void AppointmentView::on_btEdit_clicked()
     }
     emit goAppointmentEditView(idx.row());
 }
+
+
 
 void AppointmentView::on_btDelete_clicked()
 {
