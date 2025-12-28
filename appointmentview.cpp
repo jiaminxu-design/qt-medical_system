@@ -13,9 +13,9 @@ AppointmentView::AppointmentView(QWidget *parent)
     this->setWindowTitle("预约排班管理");
     initUI();
 
-    // 最终版：信号绑定窗口创建逻辑（已修正）
-    connect(this, &AppointmentView::goAppointmentEditView, this, [ = ](int rowNo) {
-        // 1. 关闭所有已打开的编辑窗口（避免重叠）
+    connect(this, &AppointmentView::goAppointmentEditView, this, [ = ](int rowNo,
+    const QDate & selectedDate) {
+        // 1. 关闭所有已打开的编辑窗口
         QList<QWidget *> allWindows = QApplication::topLevelWidgets();
         for (QWidget *w : allWindows) {
             AppointmentEditView *editWin = qobject_cast<AppointmentEditView *>(w);
@@ -25,21 +25,18 @@ AppointmentView::AppointmentView(QWidget *parent)
             }
         }
 
-        // 2. 创建窗口：父窗口必须为 nullptr（关键！）
-        AppointmentEditView *editView = new AppointmentEditView(nullptr, rowNo);
-
-        // ========== 新增这1行（核心修复） ==========
+        // 2. 创建窗口：传递选中的日期
+        AppointmentEditView *editView = new AppointmentEditView(nullptr, rowNo, selectedDate);
         editView->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
-        // 区分新增/编辑标题
         editView->setWindowTitle(rowNo == -1 ? "新增预约" : "编辑预约");
 
-        // 3. 绑定信号（保留你的逻辑）
+        // 3. 绑定信号
         connect(editView, &AppointmentEditView::appointmentSaved,
                 this, &AppointmentView::refreshTable, Qt::QueuedConnection);
         connect(editView, &AppointmentEditView::goPreviousView,
                 editView, &QWidget::close, Qt::QueuedConnection);
 
-        // 4. 显示窗口（直接show，不做任何布局添加）
+        // 4. 显示窗口
         editView->show();
     });
 
@@ -103,8 +100,20 @@ void AppointmentView::initUI()
     // ========== 6. 修复按钮状态（编辑/删除默认禁用） ==========
     ui->btEdit->setEnabled(false);
     ui->btDelete->setEnabled(false);
-}
 
+    loadDoctorList();
+
+    // ========== 新增：日历选择日期后自动筛选 ==========
+    connect(ui->calendarWidget, &QCalendarWidget::clicked, this, [ = ](const QDate & date) {
+        ui->dateEditSelected->setDate(date);
+        // 自动触发筛选（无需手动点击筛选按钮）
+        //on_btFilter_clicked();
+    });
+    // ========== 新增：初始化日期选择框为当前日期 ==========
+    ui->dateEditSelected->setDate(QDate::currentDate());
+    ui->calendarWidget->setSelectedDate(QDate::currentDate());
+
+}
 
 void AppointmentView::loadDoctorList()
 {
@@ -139,10 +148,10 @@ void AppointmentView::refreshTable()
     ui->tableView->hideColumn(model->fieldIndex("ID"));
 }
 
-
 void AppointmentView::on_btAdd_clicked()
 {
-    emit goAppointmentEditView(-1); // 仅触发信号，由统一逻辑创建独立窗口
+    QDate selectedDate = ui->dateEditSelected->date();
+    emit goAppointmentEditView(-1, selectedDate); // 传递日期
 }
 
 void AppointmentView::on_btEdit_clicked()
@@ -152,9 +161,8 @@ void AppointmentView::on_btEdit_clicked()
         QMessageBox::warning(this, "提示", "请选择要编辑的预约！");
         return;
     }
-    emit goAppointmentEditView(idx.row());
+    emit goAppointmentEditView(idx.row(), QDate::currentDate()); // 编辑模式日期用原有数据
 }
-
 
 
 void AppointmentView::on_btDelete_clicked()
@@ -175,16 +183,67 @@ void AppointmentView::on_btDelete_clicked()
 
 void AppointmentView::on_btFilter_clicked()
 {
+    auto &db = IDatabase::getInstance();
+    if (!db.appointmentTabModel) return;
+
     QStringList filters;
-    // 医生筛选
-    QString docId = ui->comboDoctor->currentData().toString();
-    if (!docId.isEmpty()) filters << QString("DOCTOR_ID = '%1'").arg(docId);
+    // 1. 医生筛选（SQL防注入：用单引号包裹，避免特殊字符）
+    QString docId = ui->comboDoctor->currentData().toString().trimmed();
+    if (!docId.isEmpty()) {
+        filters << QString("DOCTOR_ID = '%1'").arg(docId.replace("'", "''"));
+    }
 
-    // 状态筛选
-    QString status = ui->comboStatusFilter->currentText();
-    if (status != "全部状态") filters << QString("STATUS = '%1'").arg(status);
+    // 2. 状态筛选（防注入）
+    QString status = ui->comboStatusFilter->currentText().trimmed();
+    if (status != "全部状态" && !status.isEmpty()) {
+        filters << QString("STATUS = '%1'").arg(status.replace("'", "''"));
+    }
 
-    IDatabase::getInstance().searchAppointment(filters.join(" AND "));
+    // 3. 日期筛选（新增：仅当用户主动修改日期才筛选）
+    // 新增标记：记录是否手动修改过日期
+    static bool isDateModified = false;
+    // 绑定日期修改信号（仅触发一次）
+    static bool isSignalBound = false;
+    if (!isSignalBound) {
+        connect(ui->dateEditSelected, &QDateEdit::dateChanged, this, [&](const QDate &) {
+            isDateModified = true;
+        });
+        connect(ui->calendarWidget, &QCalendarWidget::clicked, this, [&](const QDate &) {
+            isDateModified = true;
+        });
+        isSignalBound = true;
+    }
+
+    // 仅手动修改过日期才加日期筛选
+    if (isDateModified) {
+        QDate selectedDate = ui->dateEditSelected->date();
+        if (selectedDate.isValid()) {
+            filters << QString("APPOINT_DATE = '%1'").arg(selectedDate.toString("yyyy-MM-dd"));
+        }
+    }
+
+    // ========== 核心修复：空条件时重置筛选 ==========
+    QString filterStr = filters.join(" AND ");
+    if (filterStr.isEmpty()) {
+        // 无筛选条件：清空过滤器，显示所有数据
+        db.appointmentTabModel->setFilter("");
+    } else {
+        // 有筛选条件：设置过滤器
+        db.appointmentTabModel->setFilter(filterStr);
+    }
+
+    // ========== 强制刷新模型（必加） ==========
+    bool selectOk = db.appointmentTabModel->select();
+    if (!selectOk) {
+        // 调试：打印筛选错误（关键！）
+        qDebug() << "筛选失败：" << db.appointmentTabModel->lastError().text();
+        qDebug() << "筛选条件：" << filterStr;
+        // 失败时重置筛选
+        db.appointmentTabModel->setFilter("");
+        db.appointmentTabModel->select();
+    }
+
+    // 刷新表格UI
+    refreshTable();
+
 }
-
-

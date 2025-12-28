@@ -603,3 +603,14 @@ QSqlQuery IDatabase::querySql(const QString &sql)
     return query;
 }
 
+// IDatabase.cpp
+//void IDatabase::searchAppointment(const QString &filter)
+//{
+//    if (!appointmentTabModel) return;
+//    // 设置筛选条件（QSqlTableModel的setFilter）
+//    appointmentTabModel->setFilter(filter);
+//    // 重新查询数据
+//    appointmentTabModel->select();
+//}
+
+

@@ -6,8 +6,9 @@
 #include <QDebug>
 #include <QDate>
 
-AppointmentEditView::AppointmentEditView(QWidget *parent, int rowNo)
-    : QWidget(parent), ui(new Ui::AppointmentEditView), m_rowNo(rowNo)
+AppointmentEditView::AppointmentEditView(QWidget *parent, int rowNo, const QDate &date)
+    : QWidget(parent), ui(new Ui::AppointmentEditView),
+      m_rowNo(rowNo), m_selectedDate(date) // 初始化选中日期
 {
     ui->setupUi(this);
 
@@ -18,7 +19,12 @@ AppointmentEditView::AppointmentEditView(QWidget *parent, int rowNo)
 
     loadComboBoxData();
     initUI();
+
+    if (rowNo == -1) { // 仅新增时生效
+        ui->dateEdit->setDate(m_selectedDate);
+    }
 }
+
 
 AppointmentEditView::~AppointmentEditView()
 {
