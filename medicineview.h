@@ -24,6 +24,7 @@ private slots:
     void on_btDelete_clicked();
     void on_btStockIn_clicked();
     void on_btStockOut_clicked();
+    void on_btSyncRemote_clicked();
 
 private:
     Ui::MedicineView *ui;

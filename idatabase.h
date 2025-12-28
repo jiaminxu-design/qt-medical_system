@@ -5,6 +5,7 @@
 #include <QtSql>
 #include <QSqlDatabase>
 #include <QDataWidgetMapper>
+#include <QNetworkAccessManager>
 
 class IDatabase : public QObject
 {
@@ -100,6 +101,8 @@ public:
     }
     bool deleteCurrentAppointment();
     int addNewAppointment();
+
+    bool syncMedicineFromRemote(); // 从远程HTTP同步药品参考信息
 };
 
 #endif // IDATABASE_H

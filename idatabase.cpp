@@ -1,5 +1,13 @@
 #include "idatabase.h"
 #include<QUuid>
+// 新增网络相关头文件
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QEventLoop>
 
 void IDatabase::initDatabase()
 {
@@ -604,5 +612,79 @@ QSqlQuery IDatabase::querySql(const QString &sql)
 }
 
 
+// ========== 仅实现：从远程HTTP接口同步药品参考信息 ==========
+bool IDatabase::syncMedicineFromRemote()
+{
+    // 1. 初始化网络管理器（极简同步实现，避免复杂异步逻辑）
+    QNetworkAccessManager *manager = new QNetworkAccessManager(this);
+    // 测试接口（可替换为实际药品参考信息接口）
+    QUrl url("https://jsonplaceholder.typicode.com/users");
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
+    // 2. 同步请求（避免主线程阻塞，极简实现）
+    QNetworkReply *reply = manager->get(request);
+    QEventLoop loop;
+    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec(); // 等待请求完成
+
+    // 3. 错误处理
+    if (reply->error() != QNetworkReply::NoError) {
+        qDebug() << "药品同步失败：" << reply->errorString();
+        reply->deleteLater();
+        manager->deleteLater();
+        return false;
+    }
+
+    // 4. 解析JSON数据（适配测试接口，映射为药品字段）
+    QByteArray data = reply->readAll();
+    QJsonArray jsonArray = QJsonDocument::fromJson(data).array();
+
+    // 5. 初始化药品模型（复用现有逻辑）
+    if (!initMedicineModel()) {
+        reply->deleteLater();
+        manager->deleteLater();
+        return false;
+    }
+
+    for (const QJsonValue &val : jsonArray) {
+        QJsonObject obj = val.toObject();
+        // 截取测试数据映射为药品字段（实际接口替换为真实字段）
+        QString medName = obj["name"].toString().mid(0, 20);       // 药品名
+
+        // 修正：先转成 QJsonObject 再访问嵌套字段
+        QJsonObject companyObj = obj["company"].toObject();
+        QString category = companyObj["bs"].toString().mid(0, 10); // 药品分类
+
+        double price = obj["id"].toInt() * 1.5;                   // 模拟单价
+
+        // 复用现有新增药品逻辑
+        int newRow = addNewMedicine();
+        if (newRow < 0) continue;
+
+        // 设置药品字段（复用现有模型）
+        medicineTabModel->setData(medicineTabModel->index(newRow, medicineTabModel->fieldIndex("NAME")),
+                                  medName);
+        medicineTabModel->setData(medicineTabModel->index(newRow, medicineTabModel->fieldIndex("CATEGORY")),
+                                  category);
+        medicineTabModel->setData(medicineTabModel->index(newRow, medicineTabModel->fieldIndex("PRICE")),
+                                  price);
+        medicineTabModel->setData(medicineTabModel->index(newRow, medicineTabModel->fieldIndex("STOCK")),
+                                  0);
+        medicineTabModel->setData(medicineTabModel->index(newRow,
+                                                          medicineTabModel->fieldIndex("STOCK_STATUS")), "缺货");
+        medicineTabModel->setData(medicineTabModel->index(newRow, medicineTabModel->fieldIndex("UNIT")),
+                                  "盒");
+        medicineTabModel->setData(medicineTabModel->index(newRow,
+                                                          medicineTabModel->fieldIndex("EXPIRY_DATE")),
+                                  QDate::currentDate().addYears(1).toString("yyyy-MM-dd"));
+    }
+
+    // 7. 提交同步数据到数据库
+    bool ret = submitMedicineEdit();
+    // 释放资源
+    reply->deleteLater();
+    manager->deleteLater();
+    return ret;
+}
 

@@ -33,6 +33,8 @@ MedicineView::MedicineView(QWidget *parent) :
     connect(ui->btDelete, &QPushButton::clicked, this, &MedicineView::on_btDelete_clicked);
     connect(ui->btStockIn, &QPushButton::clicked, this, &MedicineView::on_btStockIn_clicked);
     connect(ui->btStockOut, &QPushButton::clicked, this, &MedicineView::on_btStockOut_clicked);
+
+    connect(ui->btSyncRemote, &QPushButton::clicked, this, &MedicineView::on_btSyncRemote_clicked);
 }
 
 MedicineView::~MedicineView()
@@ -175,4 +177,19 @@ void MedicineView::on_btStockOut_clicked()
     } else {
         QMessageBox::warning(this, "失败", "出库失败！");
     }
+}
+
+
+
+
+void MedicineView::on_btSyncRemote_clicked()
+{
+    // 触发远程同步
+    bool ret = db.syncMedicineFromRemote();
+    // 提示同步结果
+    QMessageBox::information(this, "同步结果",
+                             ret ? "药品参考信息同步成功！" : "同步失败！");
+    // 刷新表格显示同步后的数据
+    db.medicineTabModel->select();
+    ui->tableView->viewport()->update();
 }
