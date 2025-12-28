@@ -440,6 +440,57 @@ bool AppointmentEditView::validateForm()
     return true;
 }
 
+//void AppointmentEditView::on_btSave_clicked()
+//{
+//    if (!validateForm()) return;
+
+//    auto &db = IDatabase::getInstance();
+//    auto model = db.appointmentTabModel;
+//    int oldRow = m_rowNo;
+
+//    // 新增行+生成ID
+//    if (m_rowNo == -1) {
+//        m_rowNo = model->rowCount();
+//        if (!model->insertRow(m_rowNo)) {
+//            QMessageBox::warning(this, "失败", "插入行失败：" + model->lastError().text());
+//            m_rowNo = oldRow;
+//            return;
+//        }
+//        QString uuid = QUuid::createUuid().toString(QUuid::WithoutBraces);
+//        model->setData(model->index(m_rowNo, model->fieldIndex("ID")), uuid);
+//    }
+
+//    // 赋值字段
+//    model->setData(model->index(m_rowNo, model->fieldIndex("PATIENT_ID")),
+//                   ui->comboPatient->currentData());
+//    model->setData(model->index(m_rowNo, model->fieldIndex("DOCTOR_ID")),
+//                   ui->comboDoctor->currentData());
+//    model->setData(model->index(m_rowNo, model->fieldIndex("APPOINT_DATE")),
+//                   ui->dateEdit->date().toString("yyyy-MM-dd"));
+//    model->setData(model->index(m_rowNo, model->fieldIndex("STATUS")), ui->comboStatus->currentText());
+
+//    // 事务提交
+//    model->database().transaction();
+//    if (db.submitAppointmentEdit()) {
+//        model->database().commit();
+//        QMessageBox::information(this, "成功", "预约保存成功！");
+//        model->select();
+//        emit appointmentSaved();
+//        emit goPreviousView();
+//    } else {
+//        model->database().rollback();
+//        QMessageBox::warning(this, "失败", "保存失败：" + model->lastError().text());
+//        if (oldRow == -1) model->removeRow(m_rowNo);
+//        m_rowNo = oldRow;
+//    }
+//    if (db.submitAppointmentEdit()) {
+//        model->database().commit();
+//        QMessageBox::information(this, "成功", "预约保存成功！");
+//        model->select(); // 先刷新模型本身
+//        emit appointmentSaved(); // 发送“保存成功”信号
+//        emit goPreviousView();
+//    }
+//}
 void AppointmentEditView::on_btSave_clicked()
 {
     if (!validateForm()) return;
@@ -469,21 +520,23 @@ void AppointmentEditView::on_btSave_clicked()
                    ui->dateEdit->date().toString("yyyy-MM-dd"));
     model->setData(model->index(m_rowNo, model->fieldIndex("STATUS")), ui->comboStatus->currentText());
 
-    // 事务提交
-    model->database().transaction();
-    if (db.submitAppointmentEdit()) {
-        model->database().commit();
+    // ========== 仅保留一段事务提交逻辑 ==========
+    model->database().transaction(); // 开启事务
+    bool submitOk = db.submitAppointmentEdit(); // 提交修改
+    if (submitOk) {
+        model->database().commit(); // 提交事务
         QMessageBox::information(this, "成功", "预约保存成功！");
-        model->select();
-        emit appointmentSaved();
+        model->select(); // 刷新模型数据
+        emit appointmentSaved(); // 通知列表页刷新
         emit goPreviousView();
     } else {
-        model->database().rollback();
+        model->database().rollback(); // 回滚事务
         QMessageBox::warning(this, "失败", "保存失败：" + model->lastError().text());
-        if (oldRow == -1) model->removeRow(m_rowNo);
+        if (oldRow == -1) model->removeRow(m_rowNo); // 新增失败则删除空行
         m_rowNo = oldRow;
     }
 }
+
 
 void AppointmentEditView::on_btCancel_clicked()
 {

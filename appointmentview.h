@@ -132,8 +132,6 @@ private slots:
     void on_btEdit_clicked();     // 编辑预约
     void on_btDelete_clicked();   // 删除预约
     void on_btFilter_clicked();   // 筛选预约
-    void on_btConfirm_clicked();  // 确认预约
-    void on_btCancel_clicked();   // 取消预约
 
 private:
     Ui::AppointmentView *ui;

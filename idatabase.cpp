@@ -493,15 +493,82 @@ void IDatabase::revertRecordEdit()
 }
 
 // ========== 预约表（Appointment）实现 ==========
+//bool IDatabase::initAppointmentModel()
+//{
+//    // 释放旧模型
+//    if (appointmentTabModel != nullptr) {
+//        delete theAppointmentSelection;
+//        delete appointmentTabModel;
+//        appointmentTabModel = nullptr;
+//        theAppointmentSelection = nullptr;
+//    }
+
+//    // 校验数据库连接
+//    if (!database.isOpen()) {
+//        qDebug() << "数据库未打开！";
+//        return false;
+//    }
+
+//    // 1. 创建表（如果不存在）
+//    QSqlQuery query;
+//    QString createSql = R"(
+//        CREATE TABLE IF NOT EXISTS Appointment (
+//            ID TEXT PRIMARY KEY,
+//            PATIENT_ID TEXT,
+//            DOCTOR_ID TEXT,
+//            APPOINT_DATE TEXT,
+//            STATUS TEXT
+//        )
+//    )";
+//    if (!query.exec(createSql)) {
+//        qDebug() << "创建Appointment表失败：" << query.lastError().text();
+//        return false;
+//    }
+
+//    // 2. 初始化模型
+//    appointmentTabModel = new QSqlTableModel(this, database);
+//    appointmentTabModel->setTable("Appointment");
+//    appointmentTabModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
+
+//    // 按预约日期排序
+//    int dateField = appointmentTabModel->fieldIndex("APPOINT_DATE");
+//    if (dateField >= 0)
+//        appointmentTabModel->setSort(dateField, Qt::DescendingOrder);
+
+////    // 加载数据
+////    if (!appointmentTabModel->select()) {
+////        qDebug() << "预约模型初始化失败：" << appointmentTabModel->lastError().text();
+////        delete appointmentTabModel;
+////        appointmentTabModel = nullptr;
+////        return false;
+////    }
+//    // 2. 加载数据后确认记录数（调试用）
+//    if (appointmentTabModel->select()) {
+//        qDebug() << "预约模型加载记录数：" << appointmentTabModel->rowCount();
+//    }
+
+//    // 初始化选择模型
+//    theAppointmentSelection = new QItemSelectionModel(appointmentTabModel);
+//    return true;
+//}
 bool IDatabase::initAppointmentModel()
 {
-    // 释放旧模型
+    // 👉 核心修改：模型已存在且有效时，仅刷新数据，不销毁
+    if (appointmentTabModel != nullptr) {
+        if (appointmentTabModel->database().isOpen()) {
+            appointmentTabModel->select(); // 仅刷新数据
+            qDebug() << "预约模型复用，记录数：" << appointmentTabModel->rowCount();
+            return true;
+        }
+    }
+
+    // 仅模型无效时才销毁重建
     if (appointmentTabModel != nullptr) {
         delete theAppointmentSelection;
         delete appointmentTabModel;
-        appointmentTabModel = nullptr;
-        theAppointmentSelection = nullptr;
     }
+    appointmentTabModel = nullptr;
+    theAppointmentSelection = nullptr;
 
     // 校验数据库连接
     if (!database.isOpen()) {
@@ -545,8 +612,10 @@ bool IDatabase::initAppointmentModel()
 
     // 初始化选择模型
     theAppointmentSelection = new QItemSelectionModel(appointmentTabModel);
+    qDebug() << "预约模型初始化完成，记录数：" << appointmentTabModel->rowCount();
     return true;
 }
+
 
 int IDatabase::addNewAppointment()
 {
