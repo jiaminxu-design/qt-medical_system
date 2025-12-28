@@ -91,7 +91,7 @@ int IDatabase::addNewPatient()
         QModelIndex idIndex = patientTabModel->index(newRow, idColumn);
         patientTabModel->setData(idIndex, uuid);
     } else {
-        qDebug() << "❌ 找不到ID字段！";
+        qDebug() << " 找不到ID字段！";
         patientTabModel->removeRow(newRow);
         return -1;
     }
@@ -105,12 +105,12 @@ int IDatabase::addNewPatient()
 
     // 5. 立即提交这一行到数据库
     if (!patientTabModel->submitAll()) {
-        qDebug() << "❌ 提交新患者失败：" << patientTabModel->lastError().text();
+        qDebug() << " 提交新患者失败：" << patientTabModel->lastError().text();
         patientTabModel->revertAll();
         return -1;
     }
 
-    // 6. 刷新模型（关键！）
+    // 6. 刷新模型
     patientTabModel->select();
 
     // 7. 验证ID是否已设置
@@ -200,7 +200,7 @@ IDatabase::IDatabase(QObject *parent) : QObject(parent)
 }
 
 
-// ========== Department表实现（仅用于读取科室数据，供下拉框选择） ==========
+// ========== Department表实现==========
 bool IDatabase::initDepartmentModel()
 {
     departmentTabModel = new QSqlTableModel(this, database);
@@ -218,23 +218,23 @@ bool IDatabase::initDepartmentModel()
 
 int IDatabase::addNewDepartment()
 {
-    return 0;    // 无需新增科室（Navicat手动加）
+    return 0;
 }
 bool IDatabase::searchDepartment(QString filter)
 {
-    return true;    // 无需搜索科室
+    return true;
 }
 bool IDatabase::deleteCurrentDepartment()
 {
-    return false;    // 无需删除科室
+    return false;
 }
 bool IDatabase::submitDepartmentEdit()
 {
-    return false;    // 无需编辑科室
+    return false;
 }
-void IDatabase::revertDepartmentEdit() {} // 无需撤销科室修改
+void IDatabase::revertDepartmentEdit() {}
 
-// ========== Doctor表实现（核心：医生的增删改查） ==========
+// ========== Doctor表实现 ==========
 bool IDatabase::initDoctorModel()
 {
     doctorTabModel = new QSqlTableModel(this, database);
@@ -435,7 +435,7 @@ int IDatabase::addNewRecord()
     return recordTabModel->rowCount();
 }
 
-// IDatabase.cpp - searchRecord 函数
+// searchRecord 函数
 bool IDatabase::searchRecord(QString filter)
 {
     if (!recordTabModel) return false;
@@ -603,14 +603,6 @@ QSqlQuery IDatabase::querySql(const QString &sql)
     return query;
 }
 
-// IDatabase.cpp
-//void IDatabase::searchAppointment(const QString &filter)
-//{
-//    if (!appointmentTabModel) return;
-//    // 设置筛选条件（QSqlTableModel的setFilter）
-//    appointmentTabModel->setFilter(filter);
-//    // 重新查询数据
-//    appointmentTabModel->select();
-//}
+
 
 

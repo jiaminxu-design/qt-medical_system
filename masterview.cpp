@@ -194,70 +194,7 @@ void MasterView::goMedicineEditView(int rowNo)
     pushWidgetToStackView(medicineEditView);
     connect(medicineEditView, SIGNAL(goPreviousView()), this, SLOT(goPreviousView()));
 
-
 }
-
-//void MasterView::goAppointmentView()
-//{
-//    qDebug() << "goAppointmentView";
-//    appointmentView = new AppointmentView(this);
-//    pushWidgetToStackView(appointmentView);
-//}
-// 新增：跳转到预约编辑页
-//void MasterView::goAppointmentEditView(int rowNo)
-//{
-//    qDebug() << "goAppointmentEditView";
-//    appointmentEditView = new AppointmentEditView(this, rowNo);
-//    pushWidgetToStackView(appointmentEditView);
-
-//    // 关联“返回上一级”信号
-//    connect(appointmentEditView, SIGNAL(goPreviousView()), this, SLOT(goPreviousView()));
-//}
-//void MasterView::goAppointmentEditView(int rowNo)
-//{
-//    qDebug() << "goAppointmentEditView";
-//    appointmentEditView = new AppointmentEditView(this, rowNo);
-//    pushWidgetToStackView(appointmentEditView);
-
-//    // 绑定“返回”信号
-//    connect(appointmentEditView, SIGNAL(goPreviousView()), this, SLOT(goPreviousView()));
-//    // 新增：绑定“保存成功”信号，刷新列表
-//    connect(appointmentEditView, SIGNAL(appointmentSaved()), appointmentView, SLOT(refreshTable()));
-//}
-//void MasterView::goAppointmentEditView(int rowNo)
-//{
-//    qDebug() << "goAppointmentEditView";
-//    appointmentEditView = new AppointmentEditView(this, rowNo);
-//    pushWidgetToStackView(appointmentEditView);
-
-//    // 绑定返回信号
-//    connect(appointmentEditView, &AppointmentEditView::goPreviousView, this,
-//            &MasterView::goPreviousView);
-//    // 关键修复：确保信号连接到appointmentView的refreshTable
-//    connect(appointmentEditView, &AppointmentEditView::appointmentSaved, [this]() {
-//        if (appointmentView) {
-//            appointmentView->refreshTable();
-//        }
-//    });
-//}
-
-//void MasterView::goAppointmentEditView(int rowNo)
-//{
-//    appointmentEditView = new AppointmentEditView(this, rowNo);
-//    pushWidgetToStackView(appointmentEditView);
-
-//    // 绑定“保存成功”信号到列表页的refreshTable
-//    connect(appointmentEditView, &AppointmentEditView::appointmentSaved, this, [this]() {
-//        if (appointmentView) {
-//            appointmentView->initUI(); // 强制重新初始化表格（彻底刷新）
-//        }
-//    });
-
-//    connect(appointmentEditView, &AppointmentEditView::goPreviousView, this,
-//            &MasterView::goPreviousView);
-//}
-
-// MasterView中处理goAppointmentEditView的逻辑
 void MasterView::goAppointmentEditView(int rowNo)
 {
     qDebug() << "goAppointmentEditView";
@@ -302,18 +239,18 @@ void MasterView::goAppointmentEditView(int rowNo)
 }
 
 
-// 修正goAppointmentView：绑定编辑页跳转信号
+//绑定编辑页跳转信号
 void MasterView::goAppointmentView()
 {
     qDebug() << "goAppointmentView";
     appointmentView = new AppointmentView(this);
     pushWidgetToStackView(appointmentView);
 
-    // 新增：绑定“跳转到编辑页”的信号
+    // 绑定“跳转到编辑页”的信号
     connect(appointmentView, SIGNAL(goAppointmentEditView(int)), this,
             SLOT(goAppointmentEditView(int)));
-}
 
+}
 
 void MasterView::pushWidgetToStackView(QWidget *widget)
 {

@@ -30,7 +30,7 @@ PatientView::PatientView(QWidget *parent, int index) :
     // 设置模型到表格视图
     ui->tableView->setModel(db.patientTabModel);
 
-    // 重要：每次都创建新的选择模型给这个视图
+    // 每次都创建新的选择模型给这个视图
     if (db.thePatientSelection) {
         delete db.thePatientSelection;
     }

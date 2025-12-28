@@ -74,32 +74,32 @@ public:
     QItemSelectionModel *theMedicineSelection = nullptr;
 
     // ---------- Record表（就诊记录） ----------
-    bool initRecordModel();          // 初始化就诊记录模型
-    int addNewRecord();              // 新增就诊记录
-    bool searchRecord(QString filter);// 搜索就诊记录
-    bool deleteCurrentRecord();      // 删除当前就诊记录
-    bool submitRecordEdit();         // 提交就诊记录修改
-    void revertRecordEdit();         // 撤销就诊记录修改
-    QSqlTableModel *recordTabModel = nullptr;      // 就诊记录模型
-    QItemSelectionModel *theRecordSelection = nullptr; // 就诊记录选择模型
+    bool initRecordModel();
+    int addNewRecord();
+    bool searchRecord(QString filter);
+    bool deleteCurrentRecord();
+    bool submitRecordEdit();
+    void revertRecordEdit();
+    QSqlTableModel *recordTabModel = nullptr;
+    QItemSelectionModel *theRecordSelection = nullptr;
 
-    // ========== 预约表（Appointment）扩展操作 ==========
-    bool initAppointmentModel();                     // 初始化预约模型
-    QItemSelectionModel *theAppointmentSelection = nullptr; // 预约选择模型
-    void revertAppointmentEdit()                     // 撤销预约修改
+    // ========== 预约表操作 ==========
+    bool initAppointmentModel();
+    QItemSelectionModel *theAppointmentSelection = nullptr;
+    void revertAppointmentEdit()
     {
         if (appointmentTabModel) appointmentTabModel->revertAll();
     }
-    void searchAppointment(const QString &filter)    // 筛选预约
+    void searchAppointment(const QString &filter)
     {
         if (appointmentTabModel) appointmentTabModel->setFilter(filter);
     }
-    bool submitAppointmentEdit()                     // 提交修改（仅保留一份）
+    bool submitAppointmentEdit()
     {
         return appointmentTabModel ? appointmentTabModel->submitAll() : false;
     }
-    bool deleteCurrentAppointment();                 // 删除当前预约
-    int addNewAppointment();                         // 新增预约行
+    bool deleteCurrentAppointment();
+    int addNewAppointment();
 };
 
 #endif // IDATABASE_H

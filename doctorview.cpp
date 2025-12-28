@@ -19,7 +19,7 @@ DoctorView::DoctorView(QWidget *parent) :
         // 隐藏不需要的列（ID）
         ui->tableView->hideColumn(db.doctorTabModel->fieldIndex("ID")); // 隐藏ID列
 
-        // ========== 关键修正：通过模型设置列名 ==========
+        // ========== 通过模型设置列名 ==========
         db.doctorTabModel->setHeaderData(db.doctorTabModel->fieldIndex("EMPLOYEENO"), Qt::Horizontal,
                                          "工号");
         db.doctorTabModel->setHeaderData(db.doctorTabModel->fieldIndex("NAME"), Qt::Horizontal, "姓名");

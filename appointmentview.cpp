@@ -103,13 +103,13 @@ void AppointmentView::initUI()
 
     loadDoctorList();
 
-    // ========== 新增：日历选择日期后自动筛选 ==========
+    // ========== 日历选择日期后自动筛选 ==========
     connect(ui->calendarWidget, &QCalendarWidget::clicked, this, [ = ](const QDate & date) {
         ui->dateEditSelected->setDate(date);
         // 自动触发筛选（无需手动点击筛选按钮）
         //on_btFilter_clicked();
     });
-    // ========== 新增：初始化日期选择框为当前日期 ==========
+    // ========== 初始化日期选择框为当前日期 ==========
     ui->dateEditSelected->setDate(QDate::currentDate());
     ui->calendarWidget->setSelectedDate(QDate::currentDate());
 
@@ -200,7 +200,7 @@ void AppointmentView::on_btFilter_clicked()
     }
 
     // 3. 日期筛选（新增：仅当用户主动修改日期才筛选）
-    // 新增标记：记录是否手动修改过日期
+    // 记录是否手动修改过日期
     static bool isDateModified = false;
     // 绑定日期修改信号（仅触发一次）
     static bool isSignalBound = false;
@@ -232,7 +232,7 @@ void AppointmentView::on_btFilter_clicked()
         db.appointmentTabModel->setFilter(filterStr);
     }
 
-    // ========== 强制刷新模型（必加） ==========
+    // ========== 强制刷新模型==========
     bool selectOk = db.appointmentTabModel->select();
     if (!selectOk) {
         // 调试：打印筛选错误（关键！）

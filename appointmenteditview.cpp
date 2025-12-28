@@ -12,7 +12,6 @@ AppointmentEditView::AppointmentEditView(QWidget *parent, int rowNo, const QDate
 {
     ui->setupUi(this);
 
-    // 必须在 setupUi 之后设置！
     setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
 
     setWindowTitle(rowNo == -1 ? "新增预约" : "编辑预约");
@@ -60,7 +59,7 @@ void AppointmentEditView::initUI()
     if (m_rowNo >= 0) {
         m_mapper->setCurrentIndex(m_rowNo);
 
-        // ========== 新增：编辑模式下匹配下拉框选中项 ==========
+        // ========== 编辑模式下匹配下拉框选中项 ==========
         // 1. 匹配患者下拉框（根据PATIENT_ID找对应的名称项）
         QString patientId = model->index(m_rowNo, pCol).data().toString();
         int patientIdx = ui->comboPatient->findData(patientId);

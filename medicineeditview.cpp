@@ -23,7 +23,7 @@ MedicineEditView::MedicineEditView(QWidget *parent, int /*editRow*/) : // 忽略
     currentRow = currentIndex.row();
 
     // 2. 判断是否为新增模式
-    // 新增模式：当前行是最后一行 并且 没有被提交过（即新行）
+    //当前行是最后一行 并且 没有被提交过（即新行）
     isNewMedicine = (currentRow == db.medicineTabModel->rowCount() - 1) &&
                     (db.medicineTabModel->data(db.medicineTabModel->index(currentRow,
                                                                           db.medicineTabModel->fieldIndex("NAME"))).toString().isEmpty());
@@ -104,7 +104,7 @@ void MedicineEditView::initMapper()
 void MedicineEditView::loadMedicineData()
 {
     if (isNewMedicine) {
-        // 新增模式：仅初始化默认值
+        // 仅初始化默认值
         ui->medSpinStock->setValue(0);
         ui->medComboStatus->setCurrentText("缺货");
         ui->medDateExpiry->setDate(QDate::currentDate().addYears(1));
@@ -114,7 +114,7 @@ void MedicineEditView::loadMedicineData()
         return;
     }
 
-    // 编辑模式：加载原有数据
+    // 加载原有数据
     if (currentRow >= 0 && currentRow < db.medicineTabModel->rowCount()) {
         // 使用 dataMapper.revert() 恢复原始数据
         dataMapper->revert();

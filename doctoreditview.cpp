@@ -5,7 +5,7 @@
 #include <QDebug>
 #include <QDateTime>
 
-// 辅助函数：生成医生工号，例如 DOC2025001
+// 辅助函数：生成医生工号
 QString generateDoctorEmpNo()
 {
     // 获取当前年份后四位
@@ -87,7 +87,7 @@ DoctorEditView::DoctorEditView(QWidget *parent, int index) :
         ui->dbTextSchedule->setPlainText("");
         ui->dbComboDepartment->setCurrentIndex(-1);
 
-        // 设置 mapper 指向新行（虽然无数据，但为后续 submit 准备）
+        // 设置 mapper 指向新行
         dataMapper->setCurrentIndex(newRow);
     }
 }

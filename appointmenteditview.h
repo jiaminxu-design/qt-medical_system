@@ -33,7 +33,7 @@ private:
     bool validateForm();         // 表单校验
     void initUI();               // UI初始化
     void loadComboBoxData();     // 加载下拉框数据
-    QDate m_selectedDate; // 新增：存储选中的日期
+    QDate m_selectedDate; //存储选中的日期
 };
 
 #endif // APPOINTMENTEDITVIEW_H

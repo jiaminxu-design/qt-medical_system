@@ -19,7 +19,7 @@ public:
 signals:
     // 跳转编辑页面信号（和药品模块一致）
     void goRecordEditView(int rowNo);
-    void refreshRecordTable(); // 新增这行：声明刷新信号
+    void refreshRecordTable(); // 声明刷新信号
 
 private slots:
     // 按钮槽函数
@@ -27,7 +27,7 @@ private slots:
     void on_btAdd_clicked();       // 新增
     void on_btEdit_clicked();      // 编辑
     void on_btDelete_clicked();    // 删除
-    void onRefreshRecordTable(); // 新增刷新槽函数
+    void onRefreshRecordTable(); // 刷新槽函数
 
 private:
     Ui::RecordView *ui;

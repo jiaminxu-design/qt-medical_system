@@ -23,6 +23,7 @@ public slots:
 
 signals:
     void goAppointmentEditView(int rowNo, const QDate &date);
+
 private slots:
     void on_btAdd_clicked();      // 新增预约
     void on_btEdit_clicked();     // 编辑预约
