@@ -21,6 +21,12 @@ public:
     QString userLogin(QString userName, QString password);
     QSqlQuery querySql(const QString &sql);
 
+    // 新增：判断数据库是否打开的公共方法
+    bool isDatabaseOpen() const
+    {
+        return database.isOpen();
+    }
+
 private:
     // 单例模式：私有构造+禁用拷贝
     explicit IDatabase(QObject *parent = nullptr);

@@ -37,10 +37,13 @@ RecordView::RecordView(QWidget *parent) :
     connect(ui->btEdit, &QPushButton::clicked, this, &RecordView::on_btEdit_clicked);
     connect(ui->btDelete, &QPushButton::clicked, this, &RecordView::on_btDelete_clicked);
     connect(this, &RecordView::refreshRecordTable, this, &RecordView::onRefreshRecordTable);
+
 }
 
 RecordView::~RecordView()
 {
+
+
     delete ui;
 }
 
@@ -146,3 +149,5 @@ void RecordView::onRefreshRecordTable()
     // 清空搜索框（避免过滤条件残留）
     ui->txtSearch->clear();
 }
+
+

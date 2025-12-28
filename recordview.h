@@ -29,9 +29,11 @@ private slots:
     void on_btDelete_clicked();    // 删除
     void onRefreshRecordTable(); // 刷新槽函数
 
+
 private:
     Ui::RecordView *ui;
     IDatabase &db; // 数据库单例引用
+
 };
 
 #endif // RECORDVIEW_H

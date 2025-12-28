@@ -144,6 +144,14 @@
           </property>
          </widget>
         </item>
+        <!-- 新增：药品统计按钮 -->
+                <item>
+                 <widget class="QPushButton" name="btStat">
+                  <property name="text">
+                   <string>统计药品数据</string>
+                  </property>
+                 </widget>
+                </item>
         <!-- 间距 spacer（平级 item） -->
         <item>
          <spacer name="horizontalSpacer1">

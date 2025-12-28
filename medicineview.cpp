@@ -3,11 +3,13 @@
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QDebug>
+#include "StatThread.h"
 
 MedicineView::MedicineView(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::MedicineView),
-    db(IDatabase::getInstance())
+    db(IDatabase::getInstance()),
+    statThread(new StatThread(this))
 {
     ui->setupUi(this);
 
@@ -35,10 +37,23 @@ MedicineView::MedicineView(QWidget *parent) :
     connect(ui->btStockOut, &QPushButton::clicked, this, &MedicineView::on_btStockOut_clicked);
 
     connect(ui->btSyncRemote, &QPushButton::clicked, this, &MedicineView::on_btSyncRemote_clicked);
+
+    // 新增：绑定统计线程信号槽
+    connect(statThread, &StatThread::statFinished, this, &MedicineView::onStatFinished);
+
+    // 新增：添加统计按钮（插入到同步按钮后）
+    QPushButton *btStat = new QPushButton("统计药品数据", this);
+    ui->horizontalLayout->insertWidget(7, btStat); // 7是同步按钮后的索引
+    connect(btStat, &QPushButton::clicked, this, &MedicineView::on_btStat_clicked);
 }
 
 MedicineView::~MedicineView()
 {
+    // 新增：安全停止线程
+    if (statThread) {
+        statThread->quit();
+        statThread->wait();
+    }
     delete ui;
 }
 
@@ -193,3 +208,26 @@ void MedicineView::on_btSyncRemote_clicked()
     db.medicineTabModel->select();
     ui->tableView->viewport()->update();
 }
+
+// ========== 新增：统计按钮槽函数 ==========
+void MedicineView::on_btStat_clicked()
+{
+    if (statThread->isRunning()) {
+        QMessageBox::warning(this, "提示", "统计线程正在运行中，请稍后！");
+        return;
+    }
+    statThread->start(); // 启动后台统计
+    QMessageBox::information(this, "提示",
+                             "已启动药品数据统计，结果将在统计完成后显示！");
+}
+
+// ========== 新增：接收统计结果 ==========
+void MedicineView::onStatFinished(const QVariantMap &statData)
+{
+    QString statStr = "===== 药品统计结果 =====\n";
+    for (auto it = statData.begin(); it != statData.end(); ++it) {
+        statStr += QString("%1：%2\n").arg(it.key()).arg(it.value().toString());
+    }
+    QMessageBox::information(this, "统计完成", statStr);
+}
+
